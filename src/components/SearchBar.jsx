@@ -1,11 +1,27 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
+// Search bar will bs used to search for songs or artists.
 
 function SearchBar() {
-    const [SearchQuery, setSearchQuery] = useState('')
-// Forms for search queries.
-    return (<form>
+    const [SearchQuery, setSearchQuery] = useState('');
 
-    </form>);
+    const handleSubmit = (event) => {
+        event.preventDefault();
+    };
+
+    const handleSearchQueryChange = (event) => {
+        setSearchQuery(event.target.value)
+    }
+
+    return (
+    <div id='searchbar'>
+        <form onSubmit = {handleSubmit}>
+            <input type="text" placeholder="Search for a song or artist" value={SearchQuery} onChange={handleSearchQueryChange}></input>
+
+            <button type="submit">Search</button>
+        </form>
+    </div>
+);
 };
 
 export default SearchBar;
