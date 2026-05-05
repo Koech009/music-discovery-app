@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 // Search bar will bs used to search for songs or artists.
-
 function SearchBar() {
     const [SearchQuery, setSearchQuery] = useState('');
 
@@ -23,5 +22,7 @@ function SearchBar() {
     </div>
 );
 };
+
+// From searching either a song or artist, the result should be viewed in a table format.
 
 export default SearchBar;
