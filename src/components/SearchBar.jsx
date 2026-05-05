@@ -1,10 +1,19 @@
+import { useState } from "react";
 import "../styles/forms.css";
 
 function SearchBar({ placeholder, onSearch }) {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const query = e.target.search.value.trim();
-    if (query) onSearch(query);
+    const query = searchQuery.trim();
+    if (query && onSearch) {
+      onSearch(query);
+    }
+  };
+
+  const handleSearchQueryChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -15,7 +24,9 @@ function SearchBar({ placeholder, onSearch }) {
       <input
         type="text"
         name="search"
-        placeholder={placeholder}
+        placeholder={placeholder || "Search for a song or artist"}
+        value={searchQuery}
+        onChange={handleSearchQueryChange}
         className="form-input"
         style={{ flex: 1 }}
       />
