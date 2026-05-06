@@ -27,7 +27,7 @@ function NavBar() {
           </Link>
         </li>
         <li>
-          <Link to="/favorites" className={isActive("/favorites")}>
+          <Link to="/favourites" className={isActive("/favourites")}>
             Favorites
           </Link>
         </li>
