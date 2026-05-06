@@ -5,7 +5,7 @@ import useLyrics from "../hooks/useLyrics.js";
 import Modal from "../components/Modal.jsx";
 import Loader from "../components/Loader.jsx";
 import ErrorMessages from "../components/ErrorMessages.jsx";
-import "../styles/table.css";
+import "../styles/songcard.css";
 
 function SongTable({ songs }) {
   const { addFavorite } = useFavorites();
@@ -28,84 +28,73 @@ function SongTable({ songs }) {
     setSelectedSong(null);
   };
 
-  // Saves song to favourites and shows toast confirmation
+  // Saves song to favourites and shows a 3-second toast confirmation
   const handleSave = async (song) => {
     await addFavorite(song);
-    setToast(` "${song.title}" added to Favorites!`);
+    setToast(`❤️ "${song.title}" added to Favorites!`);
     setTimeout(() => setToast(null), 3000);
   };
 
   return (
     <div>
-      {/* Toast notification — appears bottom right for 3 seconds */}
-      {toast && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            background: "#a78bfa",
-            color: "#fff",
-            padding: "12px 20px",
-            borderRadius: "8px",
-            fontWeight: "bold",
-            zIndex: 9999,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-          }}
-        >
-          {toast}
-        </div>
-      )}
+      {/* Toast notification — slides up from bottom-right for 3 seconds */}
+      {toast && <div className="toast">{toast}</div>}
 
-      <table className="song-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Artist</th>
-            <th>Album</th>
-            <th>Preview</th>
-            <th>Video</th>
-            <th>Lyrics</th>
-            <th>Favorites</th>
-          </tr>
-        </thead>
-        <tbody>
-          {songs.map((song) => (
-            <tr key={song.id}>
-              {/* Basic song info from Deezer API */}
-              <td>{song.title}</td>
-              <td>{song.artist.name}</td>
-              <td>{song.album.title}</td>
+      {/* Card grid — one card per song result */}
+      <div className="song-grid">
+        {songs.map((song) => (
+          <div key={song.id} className="song-card">
+            {/* Album art — falls back to a musical note placeholder if no cover */}
+            <div className="song-card__art">
+              {song.album.cover_medium ? (
+                <img src={song.album.cover_medium} alt={song.album.title} />
+              ) : (
+                <div className="song-card__art-placeholder">♪</div>
+              )}
+            </div>
 
-              {/* 30-second audio preview — only renders if preview URL exists */}
-              <td>
-                {song.preview && <audio controls src={song.preview}></audio>}
-              </td>
+            {/* Song metadata: title, artist, album */}
+            <div className="song-card__info">
+              <p className="song-card__title">{song.title}</p>
+              <p className="song-card__artist">{song.artist.name}</p>
+              <p className="song-card__album">{song.album.title}</p>
+            </div>
 
-              {/* Redirect to VideoPage with YouTube API */}
-              <td>
-                <Link to={`/video/${song.artist.name}/${song.title}`}>
-                  <button>Watch Video</button>
-                </Link>
-              </td>
+            {/* 30-second audio preview — only renders if preview URL exists */}
+            {song.preview && (
+              <div className="song-card__preview">
+                <audio controls src={song.preview} />
+              </div>
+            )}
 
-              {/* Opens lyrics modal for this song */}
-              <td>
-                <button onClick={() => handleLyricsClick(song)}>
-                  Read Lyrics
-                </button>
-              </td>
+            {/* Action buttons */}
+            <div className="song-card__actions">
+              {/* Redirects to VideoPage which fetches a YouTube embed */}
+              <Link to={`/video/${song.artist.name}/${song.title}`}>
+                <button className="btn btn--secondary">Watch Video</button>
+              </Link>
 
-              {/* Save song to favourites via useFavorites hook */}
-              <td>
-                <button onClick={() => handleSave(song)}>❤️ Save</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              {/* Opens the lyrics modal and fetches lyrics for this song */}
+              <button
+                className="btn btn--secondary"
+                onClick={() => handleLyricsClick(song)}
+              >
+                Read Lyrics
+              </button>
 
-      {/* Lyrics Modal — opens when Read Lyrics is clicked */}
+              {/* Saves song to favourites via useFavorites hook */}
+              <button
+                className="btn btn--favorite"
+                onClick={() => handleSave(song)}
+              >
+                ❤️ Save
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Lyrics Modal — mounts when a song is selected, unmounts on close */}
       {selectedSong && (
         <Modal isOpen={true} onClose={handleCloseModal}>
           <h2>
@@ -113,7 +102,7 @@ function SongTable({ songs }) {
           </h2>
           {loading && <Loader />}
           {error && <ErrorMessages message={error} />}
-          {lyrics && <pre>{lyrics}</pre>}
+          {lyrics && <pre className="lyrics-box">{lyrics}</pre>}
         </Modal>
       )}
     </div>
