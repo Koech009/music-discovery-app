@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../components/Loader";
-import ErrorMessage from "../components/ErrorMessage";
+import ErrorMessages from "../components/ErrorMessages";
 
 export default function Genres() {
   const [genres, setGenres] = useState([]);
@@ -10,33 +10,44 @@ export default function Genres() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load genres from db.json
   useEffect(() => {
-    axios.get("http://localhost:3001/genres").then((res) => setGenres(res.data));
+    axios
+      .get("/api/deezer/genre")
+      .then((res) => setGenres(res.data.data))
+      .catch(() => setError("Could not load genres."));
   }, []);
 
-  // When a genre is clicked, filter trending songs by that genre
-  function handleGenreClick(genre) {
-    setSelected(genre);
+  async function handleGenreClick(genreId, genreName) {
+    setSelected(genreName);
     setLoading(true);
-    axios
-      .get(`http://localhost:3001/trending?genre=${genre}`)
-      .then((res) => setSongs(res.data))
-      .catch(() => setError("Could not load songs for this genre."))
-      .finally(() => setLoading(false));
+    setError(null);
+    try {
+      const res = await axios.get("/api/deezer/chart");
+      const trending = res.data.tracks.data;
+      const filtered = trending.filter((song) => song.genre_id === genreId);
+      setSongs(filtered.length > 0 ? filtered : trending);
+    } catch {
+      setError("Could not load songs for this genre.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div>
-      <h2>Genres</h2>
+    <div className="page-container">
+      <div className="page-header">
+        <h1>🎸 Genres</h1>
+        <p>Browse music by genre.</p>
+      </div>
 
-      {/* Genre buttons */}
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "20px" }}>
+      {error && <ErrorMessages message={error} />}
+
+      <div className="genre-buttons">
         {genres.map((g) => (
           <button
             key={g.id}
-            onClick={() => handleGenreClick(g.name)}
-            style={{ fontWeight: selected === g.name ? "bold" : "normal" }}
+            onClick={() => handleGenreClick(g.id, g.name)}
+            className={`genre-btn ${selected === g.name ? "active" : ""}`}
           >
             {g.name}
           </button>
@@ -44,14 +55,19 @@ export default function Genres() {
       </div>
 
       {loading && <Loader />}
-      {error && <ErrorMessage message={error} />}
 
-      {/* Songs for selected genre */}
-      {songs.map((song) => (
-        <div key={song.id} style={{ marginBottom: "10px" }}>
-          <strong>{song.title}</strong> — {song.artist}
+      {songs.length > 0 && (
+        <div className="trending-list" style={{ marginTop: "2rem" }}>
+          {songs.map((song) => (
+            <div key={song.id} className="trending-card">
+              <div className="trending-info">
+                <span className="trending-title">{song.title}</span>
+                <span className="trending-artist">{song.artist.name}</span>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
