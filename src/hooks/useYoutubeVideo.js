@@ -1,31 +1,38 @@
-import {useState} from "react";
-import {searchYoutubeVideo} from "../api/youtube";
+import { useState } from "react";
+import { searchYoutubeVideo } from "../api/youtube";
 
-const useYoutubeVideo = async () => {
-    const [videoId, setVideoId] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+// Hook to fetch a YouTube video ID for a given artist and song title
+function useYoutubeVideo() {
+  const [videoId, setVideoId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    const fetchVideoId = async (artist, title) => {
-        setLoading(true);
-        setError(null);
-        setVideoId(null);
+  // Searches YouTube for an official music video and stores the video ID
+  const fetchVideoId = async (artist, title) => {
+    // Reset all state before each new fetch
+    setLoading(true);
+    setError(null);
+    setVideoId(null);
 
-        try {
-            const id = await searchYoutubeVideo(artist, title);
-            if (id) {
-                setVideoId(id);
-            } else {
-                setError("There's no music video found for this specific song");
-            }
-        }   catch (err) {
-             setError("Something's going wrong while fetching the video");
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      const id = await searchYoutubeVideo(artist, title);
+      if (id) {
+        // Store the video ID to be used for embedding or linking
+        setVideoId(id);
+      } else {
+        // API returned successfully but no video was found
+        setError("No music video found for this song.");
+      }
+    } catch {
+      // Network or API failure
+      setError("Something went wrong while fetching the video.");
+    } finally {
+      // Always reset loading regardless of outcome
+      setLoading(false);
+    }
+  };
 
-    return { videoId, loading, error, fetchVideoId };
-};
+  return { videoId, loading, error, fetchVideoId };
+}
 
-export default useYoutubeVideo
+export default useYoutubeVideo;
