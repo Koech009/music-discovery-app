@@ -233,6 +233,7 @@ body {
   color: #a0a0b0;
 }
 
+/* Loading spinner shown while API call is in-flight */
 .search-status {
   display: flex;
   flex-direction: column;
@@ -257,6 +258,7 @@ body {
   }
 }
 
+/* Shown when the Deezer API returns an error */
 .search-error {
   text-align: center;
   padding: 1.5rem;
@@ -268,6 +270,7 @@ body {
   font-size: 0.9rem;
 }
 
+/* Shown when search returns zero results */
 .search-empty {
   text-align: center;
   padding: 4rem 0;
@@ -288,6 +291,7 @@ body {
   color: #f0f0f0;
 }
 
+/* Result count line above the card grid */
 .results-info {
   font-size: 0.85rem;
   color: #a0a0b0;
@@ -296,143 +300,6 @@ body {
 
 .results-info strong {
   color: #f0f0f0;
-}
-
-/* ── SONG TABLE ── */
-.song-table-wrapper {
-  overflow-x: auto;
-  border-radius: 12px;
-  border: 1px solid #2a2a3a;
-}
-
-.song-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #1a1a26;
-  color: #f0f0f0;
-  font-size: 0.875rem;
-}
-
-.song-table thead {
-  background: #13131a;
-  border-bottom: 1px solid #2a2a3a;
-}
-
-.song-table th {
-  padding: 1rem 1.25rem;
-  text-align: left;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #7c3aed;
-  white-space: nowrap;
-}
-
-.song-table td {
-  padding: 0.875rem 1.25rem;
-  border-bottom: 1px solid #1e1e2e;
-  vertical-align: middle;
-}
-
-.song-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.song-table tbody tr:hover {
-  background: #1e1e2e;
-}
-
-.song-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.song-cover {
-  width: 42px;
-  height: 42px;
-  border-radius: 6px;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: #2a2a3a;
-}
-
-.song-title {
-  font-weight: 500;
-  color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-}
-
-.song-artist {
-  font-size: 0.8rem;
-  color: #a0a0b0;
-  margin-top: 2px;
-}
-
-.song-album {
-  color: #a0a0b0;
-  max-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.song-table audio {
-  height: 32px;
-  width: 180px;
-  accent-color: #7c3aed;
-}
-
-.table-btn {
-  padding: 0.4rem 0.9rem;
-  border-radius: 6px;
-  border: 1px solid #2a2a3a;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-  white-space: nowrap;
-  background: #1e1e2e;
-  color: #a78bfa;
-}
-
-.table-btn:hover {
-  background: #2a2a3a;
-  color: #ffffff;
-}
-
-.btn-save {
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  transition: transform 0.2s;
-}
-
-.btn-save:hover {
-  transform: scale(1.2);
-}
-
-.lyrics-box {
-  margin-top: 0.5rem;
-  padding: 1rem;
-  background: #13131a;
-  border: 1px solid #2a2a3a;
-  border-radius: 8px;
-  text-align: left;
-  white-space: pre-wrap;
-  font-size: 0.85rem;
-  color: #c0c0d0;
-  line-height: 1.7;
-  max-height: 200px;
-  overflow-y: auto;
 }
 
 /* ── CONTACT PAGE ── */
@@ -625,18 +492,22 @@ body {
 .footer {
   background: #13131a;
   border-top: 1px solid #1e1e2e;
-  padding: 2.5rem 2rem;
+  padding: 0;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  gap: 0.75rem;
 }
 
 .footer-brand {
   font-size: 1.1rem;
   font-weight: 700;
   color: #f0f0f0;
-  margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.4rem;
 }
 
@@ -644,7 +515,6 @@ body {
   display: flex;
   justify-content: center;
   gap: 1.5rem;
-  margin-bottom: 1rem;
 }
 
 .footer-links a {
@@ -661,27 +531,6 @@ body {
 .footer-copy {
   font-size: 0.8rem;
   color: #555570;
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 768px) {
-
-  .song-table th:nth-child(3),
-  .song-table td:nth-child(3) {
-    display: none;
-  }
-
-  .song-table audio {
-    width: 130px;
-  }
-
-  .song-title {
-    max-width: 120px;
-  }
-
-  .nav-links {
-    gap: 1rem;
-  }
 }
 
 /* ── PAGE LAYOUT ── */
@@ -910,18 +759,11 @@ body {
   border: none;
 }
 
-/* ── FOOTER ── */
-.footer {
-  background: #13131a;
-  border-top: 1px solid #1e1e2e;
-  padding: 0;
-  height: 160px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 0.75rem;
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 600px) {
