@@ -1,0 +1,95 @@
+/* Overlay + Modal */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: #1e1e2e;
+    color: #e0e0e0;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1001;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.modal h2 {
+    color: #a78bfa;
+    margin-bottom: 16px;
+    font-size: 1.3rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+    color: #e0e0e0;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: #a78bfa;
+}
+
+/* Lyrics text */
+.modal pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: "Georgia", serif;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #e0e0e0;
+    margin: 0;
+}
+
+/* Loader */
+.loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.spinner {
+    border: 4px solid #333;
+    border-top: 4px solid #a78bfa;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error Messages */
+.error {
+    background-color: #3b1a1a;
+    border: 1px solid #ff4d4d;
+    color: #ff8080;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-weight: bold;
+}
