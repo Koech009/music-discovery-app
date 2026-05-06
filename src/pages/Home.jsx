@@ -1,11 +1,10 @@
+import { Link } from "react-router-dom";
 import "../styles/index.css";
 
 // Home page component
 function Home() {
   return (
     <div className="home">
-     
-
       {/* Hero Section */}
       <header className="hero">
         <h1>Discover Music Instantly</h1>
@@ -14,9 +13,9 @@ function Home() {
           one place.
         </p>
         {/* CTA button navigates to the Search page */}
-        <a href="/search" className="cta-btn">
+        <Link to="/search" className="cta-btn">
           Get Started
-        </a>
+        </Link>
       </header>
 
       {/* Stats Section */}
@@ -88,9 +87,9 @@ function Home() {
       <section className="cta-section">
         <h2>Ready to explore music?</h2>
         <p>Start searching for your favorite songs right now.</p>
-        <a href="/search" className="cta-btn">
+        <Link to="/search" className="cta-btn">
           Start Searching
-        </a>
+        </Link>
       </section>
     </div>
   );
