@@ -1,19 +1,19 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
+import useLyrics from "../hooks/useLyrics.js";
+import useFavorites from "../hooks/useFavorites.js";
 import "../styles/table.css";
 
 function SongTable({ songs }) {
-  // Temporary placeholders for lyrics state
-  const lyrics = null;
-  const loading = false;
-  const error = null;
+  const { lyrics, loading, error, getLyrics } = useLyrics();
+  const { saveFavorite } = useFavorites();
+  const lyricsRef = useRef(null);
 
-  // Temporary placeholder for favorites
-  const saveFavorite = (song) => {
-    console.log(`Favorite requested for ${song.title} by ${song.artist.name}`);
-  };
-
-  const handleLyricsClick = (artist, title) => {
-    console.log(`Lyrics requested for ${artist} - ${title}`);
+  const handleLyricsClick = async (artist, title) => {
+    await getLyrics(artist, title);
+    if (lyricsRef.current) {
+      lyricsRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   return (
@@ -40,6 +40,7 @@ function SongTable({ songs }) {
                 {song.preview && <audio controls src={song.preview}></audio>}
               </td>
               <td>
+                {/* Redirect to VideoPage with YouTube API */}
                 <Link to={`/video/${song.artist.name}/${song.title}`}>
                   <button>Watch Video</button>
                 </Link>
@@ -61,9 +62,9 @@ function SongTable({ songs }) {
         </tbody>
       </table>
 
-      {/* Lyrics Display (placeholder) */}
+      {/* Lyrics Display */}
       {lyrics && (
-        <div className="lyrics-box">
+        <div ref={lyricsRef} className="lyrics-box">
           <h3>Lyrics</h3>
           {loading && <p>Loading lyrics...</p>}
           {error && <p>{error}</p>}
