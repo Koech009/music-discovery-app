@@ -1,14 +1,32 @@
 import { useState } from "react";
 import { SearchForLyric } from "../api/lyrics";
 
-// Hook will be used condiationally when the user wants to view lyrics from the Lyrics.ovh API,
-// provided the lyrics are available from API.
-
-
+// Hook used conditionally when the user wants to view lyrics from the lyrics.ovh API
 function useLyrics() {
-    const [Lyrics, setLyrics] = useState('')
+  const [lyrics, setLyrics] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    return ();
-};
+  // Fetches lyrics for a given artist and title
+  const getLyrics = async (artist, title) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await SearchForLyric(artist, title);
+      // lyrics.ovh returns { lyrics: "..." }
+      if (data?.lyrics) {
+        setLyrics(data.lyrics);
+      } else {
+        setError("Lyrics not found.");
+      }
+    } catch {
+      setError("Could not fetch lyrics.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { lyrics, loading, error, getLyrics };
+}
 
 export default useLyrics;
