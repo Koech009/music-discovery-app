@@ -9,6 +9,7 @@ function SearchBar({ placeholder, onSearch }) {
     const query = searchQuery.trim();
     if (query && onSearch) {
       onSearch(query);
+      setSearchQuery("");
     }
   };
 
