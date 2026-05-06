@@ -1,37 +1,27 @@
-import React, {useEffect} from "react";
-import useYoutubeVideo from "../hooks/useYoutubeVideo";
+import { useEffect } from "react";
+import "../styles/ui.css";
 
-const Modal = ({ song, onClose }) => {
-    const { videoId, loading, error, fetchVideoId } = useYoutubeVideo();
-    useEffect(() => {
-        if (song) {
-            fetchVideoId(song.artist.name, song.title);
-        }
-    }, [song]);
+function Modal({ isOpen, onClose, children }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
-    if (!song) return null;
+  if (!isOpen) return null;
 
-    return (
-        <div className="modal_overlay" onClick={onClose}>
-            <div className="modal_content" onClick={(e) => e.stopPropagation()}>
-                <button className="modal_close" onClick={onClose}>X</button>
-                <h2>{song.title}</h2>
-                <h3>{song.artist.name}</h3>
-                {loading && <p>Loading video...</p>}
-                {error && <p>{error}</p>}
-
-                {videoId && (
-                    <iframe
-                        width="100%"
-                        height="400"
-                        src={`https://www.youtube.com/embed/${videoId}`}
-                        title={song.title}
-                        allowFullScreen
-                        />
-                )}
-            </div>
-        </div>
-    );
-};
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <button className="close-btn" onClick={onClose}>
+          ✖
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default Modal;
