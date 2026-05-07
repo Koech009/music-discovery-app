@@ -53,3 +53,4 @@ describe("useLyrics", () => {
     expect(result.current.lyrics).toBeNull();
     expect(result.current.error).toBe("Could not fetch lyrics.");
   });
+});
