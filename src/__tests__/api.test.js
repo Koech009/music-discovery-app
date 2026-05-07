@@ -16,16 +16,48 @@ vi.mock("axios");
 
 // Deezer API tests
 describe("Deezer API Tests", () => {
-};
+    // searchDeezer tests.
+  describe("searchDeezer", () => {
+    it("should return a list of songs on a successful search", async () => {
+      const mockData = { data: { data: [{ title: "Song 1" }, { title: "Song 2" }] } };
+      axios.get.mockResolvedValueOnce(mockData);
+
+      const result = await searchDeezer("Daft Punk");
+
+      expect(axios.get).toHaveBeenCalledWith("/api/deezer/search?q=Daft Punk");
+      expect(result).toHaveLength(2);
+      expect(result[0].title).toBe("Song 1");
+    });
+
+    it("should return an empty array if the API returns no data field", async () => {
+      axios.get.mockResolvedValueOnce({ data: {} });
+      const result = await searchDeezer("Unknown Artist");
+      expect(result).toEqual([]);
+    });
+
+    it("should return an empty array and log error on failure", async () => {
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      axios.get.mockRejectedValueOnce(new Error("Network Error"));
+
+      const result = await searchDeezer("Daft Punk");
+
+      expect(result).toEqual([]);
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+  });
+
+//  getArtist tests. TODO: This will come later
+});
 
 // Lyrics.ovh API tests.
 describe("Lyrics.ovh API Tests", () => {
 
-};git 
+});
 // YouTube API test.
 describe("Lyrics.ovh API Tests", () => {
 
-};
+});
 
 
 
