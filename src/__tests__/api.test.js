@@ -4,11 +4,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import axios from "axios";
 
-import { searchDeezer } from "../api/deezer";
+import { searchDeezer, getArtist} from "../api/deezer";
 import { SearchForLyric } from "../api/lyrics";
 import { searchYoutubeVideo } from "../api/youtube";
-
-// vi.clearAllMocks(); <- function for clearing mocks
 
 
 // Mocking from vitest.
@@ -47,7 +45,29 @@ describe("Deezer API Tests", () => {
     });
   });
 
-//  getArtist tests. TODO: This will come later
+//  getArtist tests.
+describe("getArtist", () => {
+    it("should return artist details on success", async () => {
+      const mockArtist = { id: 123, name: "Justice" };
+      axios.get.mockResolvedValueOnce({ data: mockArtist });
+
+      const result = await getArtist(123);
+
+      expect(axios.get).toHaveBeenCalledWith("/api/deezer/artist/123");
+      expect(result.name).toBe("Justice");
+    });
+
+    it("should return null and log error on failure", async () => {
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      axios.get.mockRejectedValueOnce(new Error("404 Not Found"));
+
+      const result = await getArtist(999);
+
+      expect(result).toBeNull();
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+  });
 });
 
 // Lyrics.ovh API tests.
@@ -81,7 +101,51 @@ describe("Lyrics.ovh API Tests", () => {
 
 // YouTube API test.
 describe("YouTube API Tests", () => {
+    it("should return the videoId when a video is found", async () => {
+    const mockResponse = {
+      data: {
+        items: [{id: { videoId: "dQw4w9WgXcQ" }}]
+      }
+    };
+    
+    axios.get.mockResolvedValueOnce(mockResponse);
 
+    const videoId = await searchYoutubeVideo("Rick Astley", "Never Gonna Give You Up");
+
+    expect(axios.get).toHaveBeenCalledWith(
+      "https://www.googleapis.com/youtube/v3/search",
+      expect.objectContaining({
+        params: expect.objectContaining({
+          part: "snippet",
+          q: "Rick Astley Never Gonna Give You Up Official Music Video",
+          type: "video",
+          maxResults: 1,
+        })
+      })
+    );
+
+    expect(videoId).toBe("dQw4w9WgXcQ");
+  });
+
+  it("should return null if the items array is empty", async () => {
+    axios.get.mockResolvedValueOnce({ data: { items: [] } });
+
+    const result = await searchYoutubeVideo("Unknown", "Nothing");
+
+    expect(result).toBeNull();
+  });
+
+  it("should return null and log an error if the request fails", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    axios.get.mockRejectedValueOnce(new Error("API Key Invalid"));
+
+    const result = await searchYoutubeVideo("Artist", "Title");
+
+    expect(result).toBeNull();
+    expect(consoleSpy).toHaveBeenCalled();
+    
+    consoleSpy.mockRestore();
+  });
 });
 
 
