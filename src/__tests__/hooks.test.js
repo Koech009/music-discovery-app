@@ -41,7 +41,7 @@ describe("useDeezerSearch", () => {
     expect(result.current.error).toBe("No songs found.");
     expect(result.current.results).toEqual([]);
   });
-});
+}); 
 
 describe("useYoutubeVideo", () => {
   it("should start with no videoId, no loading and no error", () => {

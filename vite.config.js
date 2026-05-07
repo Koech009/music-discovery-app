@@ -7,7 +7,7 @@ export default defineConfig({
     //Added test configuration
     environment: "jsdom",
     globals:true,
-    setupFiles: "./src/tests/hookSetup.js"
+    setupFiles: "./src/__tests__/setup.js"
   },
   server: {
     proxy: {
