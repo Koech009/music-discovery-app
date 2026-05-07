@@ -21,11 +21,10 @@ export default function Genres() {
     setSelected(genreName);
     setLoading(true);
     setError(null);
+    setSongs([]);
     try {
-      const res = await axios.get("/api/deezer/chart");
-      const trending = res.data.tracks.data;
-      const filtered = trending.filter((song) => song.genre_id === genreId);
-      setSongs(filtered.length > 0 ? filtered : trending);
+      const res = await axios.get(`/api/deezer/chart/${genreId}/tracks`);
+      setSongs(res.data.data ?? []);
     } catch {
       setError("Could not load songs for this genre.");
     } finally {
@@ -39,9 +38,7 @@ export default function Genres() {
         <h1>🎸 Genres</h1>
         <p>Browse music by genre.</p>
       </div>
-
       {error && <ErrorMessages message={error} />}
-
       <div className="genre-buttons">
         {genres.map((g) => (
           <button
@@ -53,9 +50,7 @@ export default function Genres() {
           </button>
         ))}
       </div>
-
       {loading && <Loader />}
-
       {songs.length > 0 && (
         <div className="trending-list" style={{ marginTop: "2rem" }}>
           {songs.map((song) => (

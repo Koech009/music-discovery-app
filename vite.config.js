@@ -3,15 +3,16 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+
   server: {
     proxy: {
-      // Proxy for Deezer API
+      // Proxy for Deezer API 
       "/api/deezer": {
         target: "https://api.deezer.com",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/deezer/, ""),
       },
-      // Proxy for Lyrics.ovh API
+      // Proxy for Lyrics.ovh API 
       "/api/lyrics": {
         target: "https://api.lyrics.ovh/v1",
         changeOrigin: true,
@@ -24,5 +25,11 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/youtube/, ""),
       },
     },
+  },
+
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/setupTests.js",
   },
 });
