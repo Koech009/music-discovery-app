@@ -52,10 +52,35 @@ describe("Deezer API Tests", () => {
 
 // Lyrics.ovh API tests.
 describe("Lyrics.ovh API Tests", () => {
+    it("should return lyrics data when the request is successful", async () => {
+    const mockLyrics = { lyrics: "My heart goes up, my heart goes down..." };
+    axios.get.mockResolvedValueOnce({ data: mockLyrics });
 
+    const result = await SearchForLyric("Celeste", "Stop This Flame");
+
+    expect(axios.get).toHaveBeenCalledWith(
+      "/api/lyrics/Celeste/Stop This Flame",
+      {timeout: 5000}
+    );
+    expect(result).toEqual(mockLyrics);
+  });
+
+  it("should throw a user-friendly error when the API call fails", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    
+    axios.get.mockRejectedValueOnce(new Error("Request failed with status code 404"));
+
+    await expect(SearchForLyric("Artist", "Song"))
+      .rejects
+      .toThrow("Lyrics service is currently unavailable.");
+
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
 });
+
 // YouTube API test.
-describe("Lyrics.ovh API Tests", () => {
+describe("YouTube API Tests", () => {
 
 });
 
