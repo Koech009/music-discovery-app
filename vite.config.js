@@ -3,6 +3,12 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  test:{
+    //Added test configuration
+    environment: "jsdom",
+    globals:true,
+    setupFiles: "./src/tests/hookSetup.js"
+  },
   server: {
     proxy: {
       // Proxy for Deezer API
