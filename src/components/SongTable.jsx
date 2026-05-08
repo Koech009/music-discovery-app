@@ -28,10 +28,15 @@ function SongTable({ songs }) {
     setSelectedSong(null);
   };
 
-  // Saves song to favourites and shows a 3-second toast confirmation
   const handleSave = async (song) => {
-    await addFavorite(song);
-    setToast(`❤️ "${song.title}" added to Favorites!`);
+    const result = await addFavorite(song);
+
+    if (result?.duplicate) {
+      setToast(`⚠️ "${song.title}" is already in your Favourites!`);
+    } else {
+      setToast(`❤️ "${song.title}" added to Favorites!`);
+    }
+
     setTimeout(() => setToast(null), 3000);
   };
 

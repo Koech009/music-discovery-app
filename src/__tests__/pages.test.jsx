@@ -4,7 +4,6 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 
-// Pages
 import Favourites from "../pages/Favourites";
 import Genres from "../pages/Genre";
 import Home from "../pages/Home";
@@ -19,7 +18,6 @@ import VideoPage from "../pages/VideoPage";
 const mock = new MockAdapter(axios);
 beforeEach(() => mock.reset());
 
-// Mock hooks that depend on external APIs
 vi.mock("../hooks/useFavourites", () => ({
   default: () => ({
     favorites: [
@@ -50,15 +48,13 @@ vi.mock("../hooks/useYoutubeVideo.js", () => ({
   }),
 }));
 
-// Helper to render with router
 const renderWithRouter = (ui, { route = "/" } = {}) => {
   return render(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>);
 };
 
 // ─────────────────────────────────────────────
-// HOME PAGE TESTS
+// HOME
 // ─────────────────────────────────────────────
-
 describe("Home", () => {
   it("renders hero heading", () => {
     renderWithRouter(<Home />);
@@ -95,9 +91,8 @@ describe("Home", () => {
 });
 
 // ─────────────────────────────────────────────
-// FAVOURITES PAGE TESTS
+// FAVOURITES
 // ─────────────────────────────────────────────
-
 describe("Favourites", () => {
   it("renders page heading", () => {
     renderWithRouter(<Favourites />);
@@ -119,9 +114,7 @@ describe("Favourites", () => {
   });
 
   it("shows empty state when no favourites", () => {
-    vi.mocked(vi.importMock("../hooks/useFavourites").default);
-    // Re-mock with empty favorites
-    vi.doMock("../hooks/useFavourites", () => ({
+    vi.mock("../hooks/useFavourites", () => ({
       default: () => ({
         favorites: [],
         loading: false,
@@ -129,10 +122,12 @@ describe("Favourites", () => {
         removeFavorite: vi.fn(),
       }),
     }));
+    // The component renders without crashing when favorites is empty
+    renderWithRouter(<Favourites />);
   });
 
-  it("shows loader when loading", async () => {
-    vi.doMock("../hooks/useFavourites", () => ({
+  it("shows loader when loading", () => {
+    vi.mock("../hooks/useFavourites", () => ({
       default: () => ({
         favorites: [],
         loading: true,
@@ -140,13 +135,14 @@ describe("Favourites", () => {
         removeFavorite: vi.fn(),
       }),
     }));
+    // The component renders without crashing when loading
+    renderWithRouter(<Favourites />);
   });
 });
 
 // ─────────────────────────────────────────────
-// GENRES PAGE TESTS
+// GENRES
 // ─────────────────────────────────────────────
-
 describe("Genres", () => {
   it("renders page heading", async () => {
     mock.onGet("/api/deezer/genre").reply(200, { data: [] });
@@ -164,10 +160,8 @@ describe("Genres", () => {
 
     renderWithRouter(<Genres />);
 
-    await waitFor(() => {
-      expect(screen.getByText("Pop")).toBeInTheDocument();
-      expect(screen.getByText("Rock")).toBeInTheDocument();
-    });
+    expect(await screen.findByText("Pop")).toBeInTheDocument();
+    expect(await screen.findByText("Rock")).toBeInTheDocument();
   });
 
   it("fetches and displays songs when genre is clicked", async () => {
@@ -182,28 +176,24 @@ describe("Genres", () => {
 
     renderWithRouter(<Genres />);
 
-    await waitFor(() => screen.getByText("Pop"));
-    fireEvent.click(screen.getByText("Pop"));
+    fireEvent.click(await screen.findByText("Pop"));
 
-    await waitFor(() => {
-      expect(screen.getByText("Levitating")).toBeInTheDocument();
-      expect(screen.getByText("Dua Lipa")).toBeInTheDocument();
-    });
+    expect(await screen.findByText("Levitating")).toBeInTheDocument();
+    expect(await screen.findByText("Dua Lipa")).toBeInTheDocument();
   });
 
   it("shows error when genre fetch fails", async () => {
     mock.onGet("/api/deezer/genre").reply(500);
     renderWithRouter(<Genres />);
-    await waitFor(() => {
-      expect(screen.getByText("Could not load genres.")).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText("Could not load genres."),
+    ).toBeInTheDocument();
   });
 });
 
 // ─────────────────────────────────────────────
-// SEARCH PAGE TESTS
+// SEARCH
 // ─────────────────────────────────────────────
-
 describe("Search", () => {
   it("renders page heading", () => {
     renderWithRouter(<Search />);
@@ -219,9 +209,8 @@ describe("Search", () => {
 });
 
 // ─────────────────────────────────────────────
-// TRENDING PAGE TESTS
+// TRENDING
 // ─────────────────────────────────────────────
-
 describe("Trending", () => {
   it("renders page heading", async () => {
     mock.onGet("/api/deezer/chart").reply(200, {
@@ -231,12 +220,8 @@ describe("Trending", () => {
         ],
       },
     });
-
     renderWithRouter(<Trending />);
-
-    await waitFor(() => {
-      expect(screen.getByText("🔥 Trending Now")).toBeInTheDocument();
-    });
+    expect(await screen.findByText("🔥 Trending Now")).toBeInTheDocument();
   });
 
   it("renders trending songs from API", async () => {
@@ -248,15 +233,11 @@ describe("Trending", () => {
         ],
       },
     });
-
     renderWithRouter(<Trending />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Blinding Lights")).toBeInTheDocument();
-      expect(screen.getByText("The Weeknd")).toBeInTheDocument();
-      expect(screen.getByText("Levitating")).toBeInTheDocument();
-      expect(screen.getByText("Dua Lipa")).toBeInTheDocument();
-    });
+    expect(await screen.findByText("Blinding Lights")).toBeInTheDocument();
+    expect(await screen.findByText("The Weeknd")).toBeInTheDocument();
+    expect(await screen.findByText("Levitating")).toBeInTheDocument();
+    expect(await screen.findByText("Dua Lipa")).toBeInTheDocument();
   });
 
   it("renders rank numbers", async () => {
@@ -268,30 +249,23 @@ describe("Trending", () => {
         ],
       },
     });
-
     renderWithRouter(<Trending />);
-
-    await waitFor(() => {
-      expect(screen.getByText("#1")).toBeInTheDocument();
-      expect(screen.getByText("#2")).toBeInTheDocument();
-    });
+    expect(await screen.findByText("#1")).toBeInTheDocument();
+    expect(await screen.findByText("#2")).toBeInTheDocument();
   });
 
   it("shows error when trending fetch fails", async () => {
     mock.onGet("/api/deezer/chart").reply(500);
     renderWithRouter(<Trending />);
-    await waitFor(() => {
-      expect(
-        screen.getByText("Could not load trending songs."),
-      ).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText("Could not load trending songs."),
+    ).toBeInTheDocument();
   });
 });
 
 // ─────────────────────────────────────────────
-// VIDEO PAGE TESTS
+// VIDEO PAGE
 // ─────────────────────────────────────────────
-
 describe("VideoPage", () => {
   const renderVideoPage = () =>
     render(

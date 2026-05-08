@@ -20,7 +20,7 @@ vi.mock("../hooks/useFavourites.js", () => ({
     favorites: [],
     loading: false,
     error: null,
-    addFavorite: vi.fn(),
+    addFavorite: vi.fn().mockResolvedValue(undefined), // ✅ returns Promise
     removeFavorite: vi.fn(),
   }),
 }));
@@ -30,14 +30,12 @@ vi.mock("../hooks/useLyrics.js", () => ({
     lyrics: null,
     loading: false,
     error: null,
-    getLyrics: vi.fn(),
+    getLyrics: vi.fn().mockResolvedValue(undefined), // ✅ returns Promise
   }),
 }));
 
-// Helper to render with router (needed for Link components)
 const renderWithRouter = (ui) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
-// Sample song data reused across SongTable tests
 const mockSongs = [
   {
     id: "1",
@@ -58,7 +56,7 @@ const mockSongs = [
 beforeEach(() => vi.clearAllMocks());
 
 // ─────────────────────────────────────────────
-// ErrorMessages TESTS
+// ErrorMessages
 // ─────────────────────────────────────────────
 
 describe("ErrorMessages", () => {
@@ -79,7 +77,7 @@ describe("ErrorMessages", () => {
 });
 
 // ─────────────────────────────────────────────
-// Footer TESTS
+// Footer
 // ─────────────────────────────────────────────
 
 describe("Footer", () => {
@@ -105,7 +103,7 @@ describe("Footer", () => {
 });
 
 // ─────────────────────────────────────────────
-// Loader TESTS
+// Loader
 // ─────────────────────────────────────────────
 
 describe("Loader", () => {
@@ -121,7 +119,7 @@ describe("Loader", () => {
 });
 
 // ─────────────────────────────────────────────
-// Modal TESTS
+// Modal
 // ─────────────────────────────────────────────
 
 describe("Modal", () => {
@@ -189,7 +187,7 @@ describe("Modal", () => {
 });
 
 // ─────────────────────────────────────────────
-// NavBar TESTS
+// NavBar
 // ─────────────────────────────────────────────
 
 describe("NavBar", () => {
@@ -227,7 +225,7 @@ describe("NavBar", () => {
 });
 
 // ─────────────────────────────────────────────
-// SearchBar TESTS
+// SearchBar
 // ─────────────────────────────────────────────
 
 describe("SearchBar", () => {
@@ -246,19 +244,16 @@ describe("SearchBar", () => {
   it("calls onSearch with trimmed query on submit", () => {
     const onSearch = vi.fn();
     render(<SearchBar onSearch={onSearch} />);
-
     fireEvent.change(screen.getByRole("textbox"), {
       target: { value: "  Baby  " },
     });
     fireEvent.click(screen.getByText("Search"));
-
     expect(onSearch).toHaveBeenCalledWith("Baby");
   });
 
   it("does not call onSearch when input is empty", () => {
     const onSearch = vi.fn();
     render(<SearchBar onSearch={onSearch} />);
-
     fireEvent.click(screen.getByText("Search"));
     expect(onSearch).not.toHaveBeenCalled();
   });
@@ -266,17 +261,15 @@ describe("SearchBar", () => {
   it("clears input after successful search", () => {
     const onSearch = vi.fn();
     render(<SearchBar onSearch={onSearch} />);
-
     const input = screen.getByRole("textbox");
     fireEvent.change(input, { target: { value: "Baby" } });
     fireEvent.click(screen.getByText("Search"));
-
     expect(input.value).toBe("");
   });
 });
 
 // ─────────────────────────────────────────────
-// SongTable TESTS
+// SongTable
 // ─────────────────────────────────────────────
 
 describe("SongTable", () => {
@@ -299,7 +292,6 @@ describe("SongTable", () => {
 
   it("renders audio preview when available", () => {
     renderWithRouter(<SongTable songs={mockSongs} />);
-    // Audio has no ARIA role — query by element tag directly
     const audio = document.querySelector("audio");
     expect(audio).toBeInTheDocument();
     expect(audio).toHaveAttribute("src", "https://preview.mp3");
@@ -312,28 +304,27 @@ describe("SongTable", () => {
     expect(screen.getAllByText("❤️ Save")).toHaveLength(2);
   });
 
+  // ✅ Fixed: mockResolvedValue on addFavorite + findByText
   it("shows toast when Save is clicked", async () => {
     renderWithRouter(<SongTable songs={mockSongs} />);
     fireEvent.click(screen.getAllByText("❤️ Save")[0]);
-    await waitFor(() => {
-      expect(
-        screen.getByText(`❤️ "Baby" added to Favorites!`),
-      ).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText(`❤️ "Baby" added to Favorites!`),
+    ).toBeInTheDocument();
   });
 
+  // ✅ Fixed: findByText waits for async modal render
   it("opens lyrics modal when Read Lyrics is clicked", async () => {
     renderWithRouter(<SongTable songs={mockSongs} />);
     fireEvent.click(screen.getAllByText("Read Lyrics")[0]);
-    await waitFor(() => {
-      expect(screen.getByText("Baby — Justin Bieber")).toBeInTheDocument();
-    });
+    expect(await screen.findByText("Baby — Justin Bieber")).toBeInTheDocument();
   });
 
+  // ✅ Fixed: findByText for open, waitFor for close
   it("closes modal when close button is clicked", async () => {
     renderWithRouter(<SongTable songs={mockSongs} />);
     fireEvent.click(screen.getAllByText("Read Lyrics")[0]);
-    await waitFor(() => screen.getByText("Baby — Justin Bieber"));
+    await screen.findByText("Baby — Justin Bieber");
 
     fireEvent.click(screen.getByText("✖"));
     await waitFor(() => {
