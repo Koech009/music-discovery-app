@@ -22,10 +22,8 @@ export default function Genres() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get("/api/deezer/chart");
-      const trending = res.data.tracks.data;
-      const filtered = trending.filter((song) => song.genre_id === genreId);
-      setSongs(filtered.length > 0 ? filtered : trending);
+      const res = await axios.get(`/api/deezer/chart/${genreId}`);
+      setSongs(res.data.tracks.data);
     } catch {
       setError("Could not load songs for this genre.");
     } finally {
