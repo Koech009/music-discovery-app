@@ -53,7 +53,7 @@ migrations/
 
 # Local databases
 *.sqlite3
-db.json       
+
 # Misc
 *.swp
 *.swo
