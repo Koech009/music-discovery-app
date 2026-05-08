@@ -20,6 +20,17 @@ export default function useFavorites() {
 
   // Add a favorite to db.json
   async function addFavorite(song) {
+    // Check by isrc first, then by title + artist name as fallback
+    const alreadyExists = favorites.some(
+      (fav) =>
+        (fav.isrc && song.isrc && fav.isrc === song.isrc) ||
+        (fav.title === song.title && fav.artist.name === song.artist.name),
+    );
+
+    if (alreadyExists) {
+      return { duplicate: true };
+    }
+
     try {
       const res = await axios.post(BASE_URL, song);
       setFavorites((prev) => [...prev, res.data]);
