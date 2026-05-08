@@ -57,3 +57,4 @@ db.json
 # Misc
 *.swp
 *.swo
+.env
