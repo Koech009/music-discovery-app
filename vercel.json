@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/deezer/(.*)", "destination": "/api/deezer" }
+    { "source": "/api/deezer/(.*)", "destination": "/api/deezer" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
