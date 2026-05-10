@@ -82,6 +82,12 @@
     margin: 0;
     font-weight: 500;
 }
+.speech-controls {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
 
 .song-card__album {
     font-size: 0.75rem;

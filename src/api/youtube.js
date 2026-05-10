@@ -13,6 +13,7 @@ export const searchYoutubeVideo = async (artist, title) => {
         type: "video",
         maxResults: 1,
         key: API_KEY,
+        videoEmbeddable: "true",
       },
     });
     // Return the video ID string directly

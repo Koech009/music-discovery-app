@@ -4,16 +4,14 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
 
-
   // Disable OXC transformer so React plugin handles JSX in .js test files
   oxc: false,
 
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: "./src/__tests__/setup.js",
+    setupFiles: "./src/tests/setup.js",
   },
-
 
   server: {
     proxy: {

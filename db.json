@@ -1,47 +1,6 @@
 {
   "favorites": [
     {
-      "id": "GsjqZs3n6ko",
-      "readable": true,
-      "title": "Beauty And A Beat",
-      "title_short": "Beauty And A Beat",
-      "title_version": "",
-      "isrc": "USUM71205367",
-      "link": "https://www.deezer.com/track/37027991",
-      "duration": 228,
-      "rank": 979804,
-      "explicit_lyrics": false,
-      "explicit_content_lyrics": 0,
-      "explicit_content_cover": 0,
-      "preview": "https://cdnt-preview.dzcdn.net/api/1/1/a/1/c/0/a1c35032aab8a465a73991e05ac30db6.mp3?hdnea=exp=1778015845~acl=/api/1/1/a/1/c/0/a1c35032aab8a465a73991e05ac30db6.mp3*~data=user_id=0,application_id=42~hmac=8d3201a212ef8660bb56bb7d9188e9ba3373fffefb2707c077ca731d71979ca2",
-      "md5_image": "312ece7b31fb86c7a13afd757e99437c",
-      "artist": {
-        "id": 288166,
-        "name": "Justin Bieber",
-        "link": "https://www.deezer.com/artist/288166",
-        "picture": "https://api.deezer.com/artist/288166/image",
-        "picture_small": "https://cdn-images.dzcdn.net/images/artist/fe097f693cebf1f882e3da79e99e3bf9/56x56-000000-80-0-0.jpg",
-        "picture_medium": "https://cdn-images.dzcdn.net/images/artist/fe097f693cebf1f882e3da79e99e3bf9/250x250-000000-80-0-0.jpg",
-        "picture_big": "https://cdn-images.dzcdn.net/images/artist/fe097f693cebf1f882e3da79e99e3bf9/500x500-000000-80-0-0.jpg",
-        "picture_xl": "https://cdn-images.dzcdn.net/images/artist/fe097f693cebf1f882e3da79e99e3bf9/1000x1000-000000-80-0-0.jpg",
-        "tracklist": "https://api.deezer.com/artist/288166/top?limit=50",
-        "type": "artist"
-      },
-      "album": {
-        "id": 3602971,
-        "title": "Believe (Deluxe Edition)",
-        "cover": "https://api.deezer.com/album/3602971/image",
-        "cover_small": "https://cdn-images.dzcdn.net/images/cover/312ece7b31fb86c7a13afd757e99437c/56x56-000000-80-0-0.jpg",
-        "cover_medium": "https://cdn-images.dzcdn.net/images/cover/312ece7b31fb86c7a13afd757e99437c/250x250-000000-80-0-0.jpg",
-        "cover_big": "https://cdn-images.dzcdn.net/images/cover/312ece7b31fb86c7a13afd757e99437c/500x500-000000-80-0-0.jpg",
-        "cover_xl": "https://cdn-images.dzcdn.net/images/cover/312ece7b31fb86c7a13afd757e99437c/1000x1000-000000-80-0-0.jpg",
-        "md5_image": "312ece7b31fb86c7a13afd757e99437c",
-        "tracklist": "https://api.deezer.com/album/3602971/tracks",
-        "type": "album"
-      },
-      "type": "track"
-    },
-    {
       "id": "6Os6QN6lU7I",
       "readable": true,
       "title": "Maria",
@@ -324,6 +283,47 @@
         "cover_xl": "https://cdn-images.dzcdn.net/images/cover/11a240dccd1c06b57260681aa3438f0c/1000x1000-000000-80-0-0.jpg",
         "md5_image": "11a240dccd1c06b57260681aa3438f0c",
         "tracklist": "https://api.deezer.com/album/1256458/tracks",
+        "type": "album"
+      },
+      "type": "track"
+    },
+    {
+      "id": "bV8-qkr-7X8",
+      "readable": true,
+      "title": "Square Hammer",
+      "title_short": "Square Hammer",
+      "title_version": "",
+      "isrc": "USC4R1601938",
+      "link": "https://www.deezer.com/track/2556245872",
+      "duration": 239,
+      "rank": 471970,
+      "explicit_lyrics": false,
+      "explicit_content_lyrics": 0,
+      "explicit_content_cover": 0,
+      "preview": "https://cdnt-preview.dzcdn.net/api/1/1/c/7/2/0/c726e22dde00e8df7f173bdb0374ef94.mp3?hdnea=exp=1778406542~acl=/api/1/1/c/7/2/0/c726e22dde00e8df7f173bdb0374ef94.mp3*~data=user_id=0,application_id=42~hmac=3ce00200e8f2feec8f098def93d575668dc157685aebef7e1e53bd338bcf478b",
+      "md5_image": "9100019e1416f84c29dad0cfdc745dc0",
+      "artist": {
+        "id": 8506054,
+        "name": "Ghost",
+        "link": "https://www.deezer.com/artist/8506054",
+        "picture": "https://api.deezer.com/artist/8506054/image",
+        "picture_small": "https://cdn-images.dzcdn.net/images/artist/da23d5c8a0b40adefa6424ec4b357fd1/56x56-000000-80-0-0.jpg",
+        "picture_medium": "https://cdn-images.dzcdn.net/images/artist/da23d5c8a0b40adefa6424ec4b357fd1/250x250-000000-80-0-0.jpg",
+        "picture_big": "https://cdn-images.dzcdn.net/images/artist/da23d5c8a0b40adefa6424ec4b357fd1/500x500-000000-80-0-0.jpg",
+        "picture_xl": "https://cdn-images.dzcdn.net/images/artist/da23d5c8a0b40adefa6424ec4b357fd1/1000x1000-000000-80-0-0.jpg",
+        "tracklist": "https://api.deezer.com/artist/8506054/top?limit=50",
+        "type": "artist"
+      },
+      "album": {
+        "id": 516054062,
+        "title": "13 Commandments",
+        "cover": "https://api.deezer.com/album/516054062/image",
+        "cover_small": "https://cdn-images.dzcdn.net/images/cover/9100019e1416f84c29dad0cfdc745dc0/56x56-000000-80-0-0.jpg",
+        "cover_medium": "https://cdn-images.dzcdn.net/images/cover/9100019e1416f84c29dad0cfdc745dc0/250x250-000000-80-0-0.jpg",
+        "cover_big": "https://cdn-images.dzcdn.net/images/cover/9100019e1416f84c29dad0cfdc745dc0/500x500-000000-80-0-0.jpg",
+        "cover_xl": "https://cdn-images.dzcdn.net/images/cover/9100019e1416f84c29dad0cfdc745dc0/1000x1000-000000-80-0-0.jpg",
+        "md5_image": "9100019e1416f84c29dad0cfdc745dc0",
+        "tracklist": "https://api.deezer.com/album/516054062/tracks",
         "type": "album"
       },
       "type": "track"
