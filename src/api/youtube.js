@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "https://www.googleapis.com/youtube/v3";
+// const BASE_URL = "https://www.googleapis.com/youtube/v3";
+const BASE_URL = "/api/youtube";
 const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
 // Named export matches import in useYoutubeVideo.js
