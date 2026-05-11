@@ -1,70 +1,73 @@
-# 🎵 Tunely App
+# 🎵 Tunely
 
-## 📖 Project Description
+> Discover music instantly — search songs, watch videos, read lyrics, and save your favourites all in one place.
 
-The **Music Discovery App** is a React + Vite web application that allows users to search for songs, discover artists, view lyrics, and watch related music videos in one place.
-
-The application integrates multiple third-party APIs and uses custom React hooks to manage data fetching and state efficiently. It also includes automated testing using Vitest and React Testing Library to ensure reliability and maintainable code.
-
-This project was built collaboratively using GitHub workflows, feature branches, pull requests, and conflict resolution practices.
+🔗 **Live Demo:** [tunely-app-henna.vercel.app](https://tunely-app-henna.vercel.app)
 
 ---
 
-# 🚀 Features
+## 📖 About
 
-- 🎶 Search songs and artists using the Deezer API
-- 📜 Fetch and display song lyrics
-- ▶️ Watch related YouTube music videos
-- ❤️ Save favorite songs
-- 🪝 Custom React hooks for API handling
-- 🧪 Unit and integration testing with Vitest
-- ⚡ Fast development environment powered by Vite
+**Tunely** is a React + Vite music discovery web application built collaboratively as part of a group project. It integrates multiple third-party APIs, uses custom React hooks for state and data management, and includes automated tests for reliability.
 
 ---
 
-# 🛠️ Tech Stack
+## 🚀 Features
 
-- **Frontend:** React + Vite
-- **Testing:** Vitest + React Testing Library
-- **Version Control:** Git & GitHub
-- **APIs:** Deezer API, Lyrics.ovh API, YouTube Data API
+- **Search** songs and artists powered by the Deezer API
+- **Read Lyrics** with built-in text-to-speech read-aloud
+- **Watch Videos** — embedded YouTube music videos
+- **Save Favourites** — bookmark songs you love
+- **Custom Hooks** — clean, reusable data-fetching logic
+- **Tested** — unit and integration tests with Vitest
+- **Deployed** on Vercel with serverless API proxies
 
 ---
 
-# ⚙️ Setup Instructions
+## 🛠️ Tech Stack
 
-## 1️⃣ Clone the Repository
+| Category        | Technology                           |
+| --------------- | ------------------------------------ |
+| Frontend        | React + Vite                         |
+| Testing         | Vitest + React Testing Library       |
+| Deployment      | Vercel                               |
+| Version Control | Git & GitHub                         |
+| APIs            | Deezer, Lyrics.ovh, YouTube Data API |
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Koech009/music-discovery-app.git
 cd music-discovery-app
 ```
 
----
-
-## 2️⃣ Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
----
+### 3. Set Up Environment Variables
 
-## 3️⃣ Run the Development Server
+Create a `.env` file in the project root:
+
+```bash
+VITE_YOUTUBE_API_KEY=your_youtube_api_key
+```
+
+### 4. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-The app will start on:
+App runs on `http://localhost:5173`
 
-```bash
-http://localhost:5173
-```
-
----
-
-## 4️⃣ Run Tests
+### 5. Run Tests
 
 ```bash
 npm test
@@ -72,193 +75,121 @@ npm test
 
 ---
 
-# 🌐 APIs Used & Endpoints
+## 🌐 API Architecture
 
-## 🎧 Deezer API
+All API calls are routed through proxies to avoid CORS issues and network restrictions.
 
-Used for searching songs, artists, and albums.
+| API              | Proxy Endpoint | Purpose                |
+| ---------------- | -------------- | ---------------------- |
+| Deezer           | `/api/deezer`  | Search songs & artists |
+| Lyrics.ovh       | `/api/lyrics`  | Fetch song lyrics      |
+| YouTube Data API | `/api/youtube` | Fetch music videos     |
 
-### Proxy Endpoint
-
-```bash
-/api/deezer
-```
-
-### Target API
-
-```bash
-https://api.deezer.com
-```
+- **Locally** — Vite dev server proxies requests via `vite.config.js`
+- **Production** — Vercel serverless functions in `/api` handle proxying
 
 ---
 
-## 📜 Lyrics.ovh API
+## 📂 Project Structure
 
-Used for retrieving song lyrics.
-
-### Proxy Endpoint
-
-```bash
-/api/lyrics
-```
-
-### Target API
-
-```bash
-https://api.lyrics.ovh/v1
-```
-
----
-
-## ▶️ YouTube Data API
-
-Used for fetching related music videos.
-
-### Proxy Endpoint
-
-```bash
-/api/youtube
-```
-
-### Target API
-
-```bash
-https://www.googleapis.com/youtube/v3
-```
-
----
-
-# 📂 Project Structure
-
-```bash
 music-discovery-app/
 │
+├── api/ # Vercel serverless proxy functions
+│ ├── deezer.js
+│ ├── lyrics.js
+│ └── youtube.js
+│
 ├── src/
-│   ├── components/       # Reusable UI components
-│   ├── hooks/            # Custom React hooks
-│   ├── pages/            # Application pages
-│   ├── tests/            # Unit and integration tests
-│   ├── __tests__/        # Test setup files
-│   └── assets/           # Images and static assets
+│ ├── api/ # API call functions
+│ ├── components/ # Reusable UI components
+│ ├── hooks/ # Custom React hooks
+│ ├── pages/ # Application pages
+│ ├── styles/ # CSS stylesheets
+│ └── tests/ # Unit and integration tests
 │
 ├── public/
-├── vite.config.js
+├── vercel.json # Vercel routing config
+├── vite.config.js # Vite + proxy config
 ├── package.json
 └── README.md
-```
 
 ---
 
-# 🧪 Testing
+## 🧪 Testing
 
-The project uses **Vitest** and **React Testing Library** for testing.
+Tests are written with **Vitest** and **React Testing Library**.
 
-### Test Configuration
+**Configuration:**
 
-- `environment: "jsdom"`
-- `globals: true`
-- `setupFiles: "./src/__tests__/setup.js"`
+- Environment: `jsdom`
+- Globals: `true`
+- Setup file: `./src/tests/setup.js`
 
-### Tested Features
+**Covered:**
 
-- Custom hooks
-- API requests
+- Custom hook behaviour
+- API request handling
 - Component rendering
-- Favorites functionality
-- Error handling
+- Favourites functionality
+- Error state handling
 
 ---
 
-# 🔀 GitHub Workflow
+## 🔀 Git Workflow
 
 The project followed a collaborative Git workflow:
 
-- Feature branches for development
+- Feature branches per developer
 - Pull requests for code review
-- Merge conflict resolution in `vite.config.js`
-- Local and GitHub-based merging
-- Conventional commit practices
+- Merge conflict resolution
+- Conventional commit messages
 
-Example branches:
-
-```bash
-feature/Hooks-test
+**Example branches:**
+feature/hooks-test
 feature/deezer-api
 feature/lyrics
 fix/post-merge-integration
-```
 
 ---
 
-# ⚠️ Challenges Faced
+## ⚠️ Challenges & Solutions
 
-## Merge Conflicts
-
-Conflicts occurred while merging branches
-
-### Resolution
-
-The conflicts were resolved by manually combining:
-
----
-
-## API Rate Limits
-
-Some APIs, especially YouTube Data API, may temporarily block requests if too many requests are sent within a short period.
+| Challenge                            | Solution                                                      |
+| ------------------------------------ | ------------------------------------------------------------- |
+| CORS errors on Deezer & Lyrics APIs  | Vite proxy (local) + Vercel serverless functions (production) |
+| YouTube API blocked on some networks | Serverless proxy routes requests through Vercel servers       |
+| Stale lyrics showing between songs   | Added `clearLyrics()` to reset state before each fetch        |
+| YouTube embedding restrictions       | Added `videoEmbeddable=true` param to API search query        |
+| React Router 404 on Vercel           | Added SPA fallback rewrite in `vercel.json`                   |
 
 ---
 
-## Error Handling
+## 🐞 Known Issues
 
-Some API responses occasionally return:
-
-- Missing lyrics
-- Empty search results
-- Delayed responses
+- Some songs may not have lyrics available in the Lyrics.ovh database
+- YouTube may occasionally return unrelated videos for niche songs
+- Favourites are stored in memory and reset on page refresh
 
 ---
 
-# 🐞 Known Bugs
+## 🔮 Future Improvements
 
-- Some songs may not return lyrics from the Lyrics API.
-- YouTube results may occasionally return unrelated videos.
-- Favorites are not yet persisted after page refresh.
-- Some API requests may fail if rate limits are exceeded.
-
----
-
-# 🔮 Future Improvements
-
-- Add user authentication
-- Persist favorites using a backend/database
-- Deploy the application online
+- User authentication and persistent accounts
+- Backend database for saving favourites
+- Improved YouTube search accuracy
+- Playlist creation and management
 
 ---
 
-# 👥 Contributors
+## 👥 Contributors
 
-- Ian Kipchirchir
-- Team Members / Collaborators(Eugine,Terrence,Marshal)
-
----
-
-# 📜 License
-
-This project is for educational purposes and was built as part of a collaborative learning experience.
+- **Ian Kipchirchir**
+- **Eugine Ogutu**
+- **Terrence Ochieng**
+- **Marshal Wayne**
 
 ---
 
-# Running Summary
+## 📜 License
 
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Run tests
-npm test
-
-
-```
+This project was built for educational purposes as part of a collaborative learning experience.

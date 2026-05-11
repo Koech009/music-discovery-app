@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/api/deezer/(.*)", "destination": "/api/deezer" },
+    { "source": "/api/youtube/(.*)", "destination": "/api/youtube" },
+    { "source": "/api/lyrics/(.*)", "destination": "/api/lyrics" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

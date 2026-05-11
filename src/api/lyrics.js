@@ -1,5 +1,7 @@
 import axios from "axios";
 
+// const BASE_URL = "/api/lyrics";
+// const BASE_URL = "https://api.lyrics.ovh/v1";
 const BASE_URL = "/api/lyrics";
 
 /**
