@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3001/favorites";
+// const BASE_URL = "http://localhost:3001/favorites";
+
+const BASE_URL = "https://tunely-api.onrender.com/favorites";
 
 export default function useFavorites() {
   const [favorites, setFavorites] = useState([]);
@@ -20,7 +22,6 @@ export default function useFavorites() {
 
   // Add a favorite to db.json
   async function addFavorite(song) {
-    // Check by isrc first, then by title + artist name as fallback
     const alreadyExists = favorites.some(
       (fav) =>
         (fav.isrc && song.isrc && fav.isrc === song.isrc) ||
