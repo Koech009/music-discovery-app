@@ -58,3 +58,4 @@ migrations/
 *.swp
 *.swo
 .env
+.venv
