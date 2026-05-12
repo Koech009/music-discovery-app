@@ -1,4 +1,5 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields, validate
+from song_schema import SongSchema
 # Handle importation of the playlist model after here.
 
 class PlaylistSchema(SQLAlchemyAutoSchema):
@@ -10,5 +11,8 @@ class PlaylistSchema(SQLAlchemyAutoSchema):
         # Determines whether foreign key fields are included in the serialized output.
 
     # Validations
-    name = fields.String(required = True, validate = validate.Range(min =1, max = 100))
-
+    name = fields.String(required = True, validate = validate.Length(min =1, max = 100))
+    user_id = fields.Int(required=True)
+    songs = fields.List(
+        fields.Nested(SongSchema)
+    )

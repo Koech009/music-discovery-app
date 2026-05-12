@@ -1,4 +1,5 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
+from song_schema import SongSchema
 # Handle importation of the favorite model after here.
 
 class FavoriteSchema(SQLAlchemyAutoSchema):
@@ -11,3 +12,6 @@ class FavoriteSchema(SQLAlchemyAutoSchema):
     #Validations
     song_id = fields.Int(required = True)
     user_id = fields.Int(required = True)
+    songs = fields.List(
+        fields.Nested(SongSchema)
+    )
