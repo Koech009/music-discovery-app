@@ -1,5 +1,5 @@
-from marshmallow import Schema
-# Handle importation of the favourite model after here.
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+# Handle importation of the favorite model after here.
 
-class FavoriteSchema():
+class FavoriteSchema(SQLAlchemyAutoSchema):
     pass

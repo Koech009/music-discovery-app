@@ -1,5 +1,5 @@
-from marshmallow import Schema
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 # Handle importation of the song model after here.
 
-class SongSchema():
+class SongSchema(SQLAlchemyAutoSchema):
     pass
