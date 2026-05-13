@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "../styles/footer.css";
 
 function Footer() {
@@ -5,9 +6,10 @@ function Footer() {
     <footer className="footer">
       <p className="footer-brand">🎵 Tunely</p>
       <div className="footer-links">
-        <a href="#">About</a>
-        <a href="#">Contact</a>
-        <a href="#">Privacy Policy</a>
+        <Link to="/about">About</Link>
+        <Link to="/contact">Contact Us</Link>
+        <Link to="#">Privacy Policy</Link>
+        <Link to="#">Terms of Service</Link>
       </div>
       <p className="footer-copy">
         © {new Date().getFullYear()} Tunely. All rights reserved.
