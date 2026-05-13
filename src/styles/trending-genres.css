@@ -1,0 +1,316 @@
+/* ============================================
+   TRENDING & GENRES — trending-genres.css
+   Shared styles for both pages
+   ============================================ */
+
+/* ── Page layout ── */
+.page-container {
+    padding: 2rem 2.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.3rem;
+}
+
+.page-subtitle {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 1.6rem;
+}
+
+/* ── Genre pill buttons ── */
+.genre-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.6rem;
+}
+
+.genre-btn {
+    padding: 7px 18px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #aaa;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.genre-btn:hover {
+    border-color: #e53935;
+    color: #fff;
+}
+
+.genre-btn.active {
+    background: #e53935;
+    border-color: #e53935;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ── Song list ── */
+.trending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ── Song card ── */
+.trending-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.trending-card:hover {
+    border-color: #e53935;
+    background: #161616;
+}
+
+/* Rank number */
+.trending-rank {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e53935;
+    min-width: 32px;
+    flex-shrink: 0;
+}
+
+/* Album art */
+.trending-art {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* Title + artist */
+.trending-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.trending-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.trending-artist {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Audio preview */
+.trending-audio {
+    height: 34px;
+    width: 240px;
+    flex-shrink: 0;
+    accent-color: #e53935;
+}
+
+/* Action buttons */
+.trending-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* ── Shared button base ── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.btn--sm {
+    padding: 6px 11px;
+    font-size: 0.82rem;
+}
+
+.btn--secondary {
+    background: #1e1e1e;
+    color: #ccc;
+    border: 1px solid #333;
+}
+
+.btn--secondary:hover {
+    background: #2a2a2a;
+    color: #fff;
+}
+
+.btn--heart {
+    background: #2a0a0a;
+    color: #e53935;
+    border: 1px solid #5a1a1a;
+}
+
+.btn--heart:hover {
+    background: #e53935;
+    color: #fff;
+}
+
+/* ── Toast ── */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1e1e1e;
+    color: #fff;
+    border: 1px solid #333;
+    border-left: 4px solid #e53935;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Playlist picker modal ── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+    width: 360px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-box h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.modal-song-name {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin: 0;
+}
+
+.modal-empty {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.modal-playlist-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-playlist-btn {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.modal-playlist-btn:hover {
+    border-color: #e53935;
+    background: #1e1e1e;
+}
+
+.modal-playlist-btn span {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.modal-close {
+    align-self: flex-end;
+    margin-top: 4px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .trending-card {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .trending-audio {
+        width: 100%;
+    }
+
+    .trending-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .trending-title {
+        font-size: 0.88rem;
+    }
+}
