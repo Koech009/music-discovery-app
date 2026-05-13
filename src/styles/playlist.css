@@ -1,0 +1,329 @@
+.page-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+}
+
+.page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: #f0eff4;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+    font-size: 13px;
+    color: rgba(240, 239, 244, 0.4);
+    margin: 0 0 32px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.page-empty {
+    font-size: 14px;
+    color: rgba(240, 239, 244, 0.45);
+    margin-top: 24px;
+    line-height: 1.7;
+}
+
+/* ── Playlist list ───────────────────────────────────────────────────── */
+.playlist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Playlist card ───────────────────────────────────────────────────── */
+.playlist-card {
+    background: #14141f;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.playlist-card:hover {
+    border-color: rgba(255, 255, 255, 0.13);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Card header ─────────────────────────────────────────────────────── */
+.playlist-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 22px;
+    flex-wrap: wrap;
+}
+
+/* ── Card info ───────────────────────────────────────────────────────── */
+.playlist-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.playlist-card__name {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #f0eff4;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.playlist-card__meta {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #e8365d;
+    margin-bottom: 4px;
+}
+
+.playlist-card__description {
+    font-size: 12.5px;
+    color: rgba(240, 239, 244, 0.4);
+    margin: 4px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Card action buttons ─────────────────────────────────────────────── */
+.playlist-card__actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+/* ── Edit form ───────────────────────────────────────────────────────── */
+.playlist-edit-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.playlist-edit-form label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(240, 239, 244, 0.4);
+    margin-bottom: -4px;
+}
+
+.playlist-input {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #f0eff4;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: border-color 0.18s ease;
+}
+
+.playlist-input:focus {
+    border-color: rgba(232, 54, 93, 0.5);
+}
+
+.playlist-input option {
+    background: #1a1a2e;
+}
+
+.playlist-edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* ── Songs panel ─────────────────────────────────────────────────────── */
+.playlist-songs {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 12px 22px 18px;
+}
+
+.playlist-songs ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.playlist-empty {
+    font-size: 13px;
+    color: rgba(240, 239, 244, 0.35);
+    text-align: center;
+    padding: 12px 0;
+    margin: 0;
+}
+
+/* ── Song row ────────────────────────────────────────────────────────── */
+.playlist-song-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.16s ease;
+}
+
+.playlist-song-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.playlist-song-item__art {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.playlist-song-item__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.playlist-song-item__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f0eff4;
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.playlist-song-item__artist {
+    font-size: 11.5px;
+    color: #e8365d;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Shared buttons (btn base + variants) ────────────────────────────── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease, transform 0.1s ease;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.btn:active {
+    transform: scale(0.96);
+}
+
+.btn--primary {
+    background: #e8365d;
+    color: #fff;
+    border-color: #e8365d;
+}
+
+.btn--primary:hover {
+    background: #f0475e;
+}
+
+.btn--secondary {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(240, 239, 244, 0.75);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn--secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #f0eff4;
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.btn--danger {
+    background: rgba(232, 54, 93, 0.1);
+    color: #f06080;
+    border-color: rgba(232, 54, 93, 0.25);
+}
+
+.btn--danger:hover {
+    background: rgba(232, 54, 93, 0.2);
+    border-color: rgba(232, 54, 93, 0.45);
+}
+
+.btn--sm {
+    padding: 5px 10px;
+    font-size: 11px;
+}
+
+/* ── Toast ───────────────────────────────────────────────────────────── */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1c1c2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f0eff4;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 36px rgba(0, 0, 0, 0.55);
+    z-index: 9999;
+    pointer-events: none;
+    animation: toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .playlist-card__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .playlist-card__actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .page-title {
+        font-size: 26px;
+    }
+}
