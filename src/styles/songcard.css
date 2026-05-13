@@ -1,201 +1,63 @@
-/* ── Grid layout — auto-fills columns, min 260px each ── */
-.song-grid {
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ── Root ─────────────────────────────────────────────────────────────── */
+.st-root {
+    --st-bg: #0e0e16;
+    --st-card: #14141f;
+    --st-card-hov: #1b1b2e;
+    --st-border: rgba(255, 255, 255, 0.07);
+    --st-border-hov: rgba(255, 255, 255, 0.14);
+    --st-accent: #e8365d;
+    --st-accent2: #4f8ef7;
+    --st-text: #f0eff4;
+    --st-muted: rgba(240, 239, 244, 0.38);
+    --st-artist: #e8365d;
+    --st-radius: 14px;
+    --st-shadow: 0 6px 28px rgba(0, 0, 0, 0.55);
+    --st-shadow-hov: 0 14px 48px rgba(232, 54, 93, 0.2);
+
+    font-family: 'DM Sans', sans-serif;
+    padding: 4px 0 40px;
+    position: relative;
+}
+
+/* ── Grid ─────────────────────────────────────────────────────────────── */
+.st-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.25rem;
-    margin: 1.5rem 0;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 22px;
 }
 
-/* ── Card shell ── */
-.song-card {
-    background: #1a1a26;
-    border: 1px solid #2a2a3a;
-    border-radius: 14px;
+/* ── Card ─────────────────────────────────────────────────────────────── */
+.st-card {
+    background: var(--st-card);
+    border: 1px solid var(--st-border);
+    border-radius: var(--st-radius);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    color: #f0f0f0;
-    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    box-shadow: var(--st-shadow);
+    transition:
+        transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.22s ease,
+        border-color 0.22s ease,
+        background 0.22s ease;
+
+    /* staggered entrance */
+    animation: st-rise 0.45s ease both;
 }
 
-.song-card:hover {
-    transform: translateY(-4px);
-    border-color: #7c3aed;
-    box-shadow: 0 8px 28px rgba(124, 58, 237, 0.18);
+.st-card:hover {
+    transform: translateY(-6px) scale(1.015);
+    box-shadow: var(--st-shadow-hov);
+    border-color: var(--st-border-hov);
+    background: var(--st-card-hov);
 }
 
-/* ── Album art — square aspect ratio, covers full card width ── */
-.song-card__art {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background: #13131a;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.song-card__art img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.3s ease;
-}
-
-/* Subtle zoom on the art when hovering the card */
-.song-card:hover .song-card__art img {
-    transform: scale(1.04);
-}
-
-/* Musical note shown when Deezer returns no cover image */
-.song-card__art-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    color: #a78bfa;
-    opacity: 0.3;
-}
-
-/* ── Song metadata ── */
-.song-card__info {
-    padding: 0.9rem 1rem 0.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.song-card__title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.song-card__artist {
-    font-size: 0.8rem;
-    color: #a78bfa;
-    margin: 0;
-    font-weight: 500;
-}
-.speech-controls {
-  margin-top: 1rem;
-  display: flex;
-  gap: 0.5rem;
-}
-
-
-.song-card__album {
-    font-size: 0.75rem;
-    color: #555570;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* ── 30-second audio preview bar ── */
-.song-card__preview {
-    padding: 0.6rem 1rem 0.2rem;
-}
-
-.song-card__preview audio {
-    width: 100%;
-    height: 30px;
-    accent-color: #7c3aed;
-}
-
-/* ── Action buttons — pinned to card bottom via margin-top: auto ── */
-.song-card__actions {
-    padding: 0.75rem 1rem 1rem;
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: auto;
-}
-
-/* Base button styles shared across all variants */
-.btn {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.78rem;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    font-family: inherit;
-    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-    white-space: nowrap;
-}
-
-.btn:active {
-    transform: scale(0.96);
-}
-
-/* Watch Video / Read Lyrics — muted by default, purple on hover */
-.btn--secondary {
-    background: #2a2a3a;
-    color: #a78bfa;
-    border: 1px solid #3a3a50;
-}
-
-.btn--secondary:hover {
-    background: #7c3aed;
-    color: #ffffff;
-    border-color: #7c3aed;
-}
-
-/* Save to Favourites — subtle pink tint to stand out from secondary */
-.btn--favorite {
-    background: transparent;
-    color: #f0abfc;
-    border: 1px solid #3b1d6e;
-}
-
-.btn--favorite:hover {
-    background: rgba(124, 58, 237, 0.15);
-    border-color: #7c3aed;
-}
-
-/* ── Lyrics pre block rendered inside the Modal ── */
-.lyrics-box {
-    margin-top: 1rem;
-    padding: 1rem;
-    background: #13131a;
-    border: 1px solid #2a2a3a;
-    border-radius: 8px;
-    text-align: left;
-    white-space: pre-wrap;
-    font-size: 0.85rem;
-    color: #c0c0d0;
-    line-height: 1.7;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-/* ── Toast — slides up from bottom-right, auto-dismissed after 3s ── */
-.toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: #7c3aed;
-    color: #ffffff;
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    z-index: 9999;
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
-    animation: toastIn 0.22s ease;
-}
-
-@keyframes toastIn {
+@keyframes st-rise {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(18px);
     }
 
     to {
@@ -204,18 +66,255 @@
     }
 }
 
-/* ── Responsive: single column on very small screens ── */
-@media (max-width: 480px) {
-    .song-grid {
-        grid-template-columns: 1fr;
+/* ── Art ──────────────────────────────────────────────────────────────── */
+.st-card__art {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    overflow: hidden;
+    background: #0a0a12;
+}
+
+.st-card__art-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+}
+
+.st-card:hover .st-card__art-img {
+    transform: scale(1.07);
+}
+
+.st-card__art-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+    color: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, #0a0a12, #1a1a2e);
+}
+
+/* subtle gradient bleed from art into card */
+.st-card__art-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to bottom, transparent, var(--st-card));
+    pointer-events: none;
+    transition: background 0.22s ease;
+}
+
+.st-card:hover .st-card__art-overlay {
+    background: linear-gradient(to bottom, transparent, var(--st-card-hov));
+}
+
+/* ── Info ─────────────────────────────────────────────────────────────── */
+.st-card__info {
+    padding: 12px 15px 6px;
+    flex: 1;
+}
+
+.st-card__title {
+    margin: 0;
+    font-family: 'Syne', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--st-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.01em;
+}
+
+.st-card__artist {
+    margin: 4px 0 2px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--st-artist);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.st-card__album {
+    margin: 0;
+    font-size: 11px;
+    color: var(--st-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Audio Preview ────────────────────────────────────────────────────── */
+.st-card__preview {
+    padding: 6px 12px 4px;
+}
+
+.st-audio {
+    width: 100%;
+    height: 30px;
+    accent-color: var(--st-accent);
+}
+
+/* ── Actions ──────────────────────────────────────────────────────────── */
+.st-card__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 8px 12px 13px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.st-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 7px 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.16s ease, border-color 0.16s ease, transform 0.1s ease;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.st-btn:active {
+    transform: scale(0.95);
+}
+
+/* Ghost — Video + Lyrics */
+.st-btn--ghost {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(240, 239, 244, 0.8);
+    border-color: rgba(255, 255, 255, 0.09);
+}
+
+.st-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.11);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: var(--st-text);
+}
+
+/* Favourite */
+.st-btn--fave {
+    background: rgba(232, 54, 93, 0.12);
+    color: #f06080;
+    border-color: rgba(232, 54, 93, 0.28);
+}
+
+.st-btn--fave:hover {
+    background: rgba(232, 54, 93, 0.22);
+    border-color: rgba(232, 54, 93, 0.5);
+}
+
+/* Add to Playlist — full width */
+.st-btn--playlist {
+    grid-column: span 2;
+    background: rgba(79, 142, 247, 0.1);
+    color: #7eb3ff;
+    border-color: rgba(79, 142, 247, 0.25);
+}
+
+.st-btn--playlist:hover {
+    background: rgba(79, 142, 247, 0.2);
+    border-color: rgba(79, 142, 247, 0.45);
+}
+
+/* ── Toast ────────────────────────────────────────────────────────────── */
+.st-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1c1c2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--st-text);
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    box-shadow: 0 8px 36px rgba(0, 0, 0, 0.55);
+    z-index: 9999;
+    pointer-events: none;
+    animation: st-toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes st-toast-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(14px);
     }
 
-    .song-card__actions {
-        flex-direction: column;
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .st-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 14px;
     }
 
-    .btn {
-        width: 100%;
-        text-align: center;
+    .st-card__title {
+        font-size: 12px;
     }
+
+    .st-card__artist {
+        font-size: 11px;
+    }
+
+    .st-btn {
+        font-size: 10.5px;
+        padding: 6px 4px;
+    }
+}
+
+/* ── Lyrics Modal ─────────────────────────────────────────────────────── */
+
+/* The h2 title: "Song — Artist" */
+.st-root .modal h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #a78bfa;
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    line-height: 1.4;
+    padding-right: 32px;
+    /* don't overlap close btn */
+}
+
+/* Lyrics body text */
+.st-root .modal pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.93rem;
+    font-weight: 300;
+    line-height: 2;
+    color: rgba(240, 239, 244, 0.82);
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+
+.st-root .modal button {
+    font-family: 'DM Sans', sans-serif;
 }

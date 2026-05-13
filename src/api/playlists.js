@@ -1,0 +1,109 @@
+const BASE_URL = "http://localhost:3002/playlists"; //points to the json-server backend for playlists
+
+const jsonHeaders = { "Content-Type": "application/json" }; //ensures each request sends json data
+
+// IDs are strings in json-server
+const toId = (id) => {
+  if (!id && id !== 0) throw new Error(`Invalid playlist ID: "${id}"`);
+  return id;
+};
+
+const patch = async (id, body) => {
+  const response = await fetch(`${BASE_URL}/${toId(id)}`, {
+    method: "PATCH",
+    headers: jsonHeaders,
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`Failed to update playlist ${id}`);
+  return response.json();
+};
+
+// fetch all playlists belonging to a specific user
+
+export async function getPlaylists(userId) {
+  if (!userId) throw new Error("userId is required to fetch playlists");
+  const response = await fetch(`${BASE_URL}?userId=${userId}`);
+  if (!response.ok) throw new Error("Failed to fetch playlists");
+  return response.json();
+}
+
+// fetch a single playlist by ID
+
+export async function getPlaylist(id) {
+  const response = await fetch(`${BASE_URL}/${toId(id)}`);
+  if (!response.ok) throw new Error(`Playlist "${id}" not found`);
+  return response.json();
+}
+
+// create a new playlist with a name, optional description, and associated userId
+
+export async function createPlaylist(name, description = "", userId) {
+  if (!userId) throw new Error("userId is required to create a playlist");
+  if (!name?.trim()) throw new Error("Playlist name cannot be empty");
+
+  const response = await fetch(BASE_URL, {
+    method: "POST",
+    headers: jsonHeaders,
+    body: JSON.stringify({
+      name: name.trim(),
+      description: description.trim(),
+      userId,
+      songs: [],
+      createdAt: new Date().toISOString(),
+    }),
+  });
+  if (!response.ok) throw new Error("Failed to create playlist");
+  return response.json();
+}
+
+// ADD SONG TO PLAYLIST with duplicate guard (throws error if song already exists in playlist)
+
+export async function addSongToPlaylist(playlistId, song) {
+  const playlist = await getPlaylist(playlistId);
+
+  // Duplicate guard — throw typed error so caller can show specific toast
+  if (playlist.songs.some((s) => s.id === song.id)) {
+    const err = new Error(`"${song.title}" is already in this playlist`);
+    err.duplicate = true;
+    throw err;
+  }
+
+  return patch(playlistId, {
+    ...playlist,
+    songs: [...playlist.songs, song],
+  });
+}
+
+// REMOVE SONG FROM PLAYLIST
+
+export async function removeSongFromPlaylist(playlistId, songId) {
+  const playlist = await getPlaylist(playlistId);
+  return patch(playlistId, {
+    ...playlist,
+    songs: playlist.songs.filter((s) => s.id !== songId),
+  });
+}
+
+// RENAME PLAYLIST
+
+export async function renamePlaylist(playlistId, newName) {
+  if (!newName?.trim()) throw new Error("Playlist name cannot be empty");
+  return patch(playlistId, { name: newName.trim() });
+}
+
+// UPDATE DESCRIPTION
+
+export async function updatePlaylistDescription(playlistId, newDescription) {
+  return patch(playlistId, { description: newDescription?.trim() ?? "" });
+}
+
+// DELETE PLAYLIST
+
+export async function deletePlaylist(playlistId) {
+  const response = await fetch(`${BASE_URL}/${toId(playlistId)}`, {
+    method: "DELETE",
+  });
+  if (!response.ok)
+    throw new Error(`Failed to delete playlist "${playlistId}"`);
+  return true;
+}

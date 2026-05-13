@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import "../styles/ui.css";
-
+// A reusable modal component that can be used to display content in a popup overlay. It takes isOpen, onClose, and children as props. It also listens for the Escape key to close the modal when it's open.
 function Modal({ isOpen, onClose, children }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -13,12 +13,12 @@ function Modal({ isOpen, onClose, children }) {
   if (!isOpen) return null;
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>
           ✖
         </button>
-        {children}
+        <div className="modal-body">{children}</div>
       </div>
     </div>
   );
