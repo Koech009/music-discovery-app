@@ -1,12 +1,12 @@
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields, validate
 # Handle importation of the user model after here.
+from ..routes.user_routes import User
 
 class UserSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = 'User' 
+        model = User
         # Convert user back to object after importing the User model.
         load_instance = True
-        include_relationships = True
 
     # Validations
     username = fields.Str(validate = validate.Length(min=3,max=50))
