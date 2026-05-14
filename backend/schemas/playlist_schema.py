@@ -1,19 +1,47 @@
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields, validate
-from song_schema import SongSchema
-# Handle importation of the playlist model after here.
-from ..routes.playlist_routes import Playlist
+from flask_marshmallow import Marshmallow
+from marshmallow import fields, validate, validates, ValidationError, pre_load, EXCLUDE
+from extensions import db
+from models.playlist import Playlist
 
-class PlaylistSchema(SQLAlchemyAutoSchema):
+ma = Marshmallow()
+
+
+class PlaylistSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Playlist
-        # Convert user back to object after importing the Playlist model.
         load_instance = True
-        include_fk = True 
-        # Determines whether foreign key fields are included in the serialized output.
+        sqla_session = db.session
+        include_fk = True
+        unknown = EXCLUDE
 
-    # Validations
-    name = fields.String(required = True, validate = validate.Length(min =1, max = 100))
-    user_id = fields.Int(required=True)
-    songs = fields.List(
-        fields.Nested(SongSchema)
-    )
+    id = ma.auto_field(dump_only=True)
+    created_at = ma.auto_field(dump_only=True)
+
+    user_id = fields.Int(required=True, data_key="userId")
+    name = fields.String(
+        required=True, validate=validate.Length(min=1, max=120))
+    description = fields.String(
+        load_default='', validate=validate.Length(max=500))
+    songs = fields.List(fields.Dict(), load_default=list)
+
+    @pre_load
+    def strip_fields(self, data, **kwargs):
+        for field in ["name", "description"]:
+            if field in data and isinstance(data[field], str):
+                data[field] = data[field].strip()
+        return data
+
+    @validates("name")
+    def validate_name(self, value):
+        if not value.strip():
+            raise ValidationError("Playlist name cannot be empty.")
+
+    @validates("user_id")
+    def validate_user_id(self, value):
+        if value <= 0:
+            raise ValidationError("Invalid user ID.")
+
+
+# Instances
+playlist_schema = PlaylistSchema()
+playlists_schema = PlaylistSchema(many=True)
