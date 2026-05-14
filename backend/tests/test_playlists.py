@@ -2,6 +2,7 @@ import pytest
 from app import create_app
 from extensions import db
 from models.playlist import Playlist
+from models.user import User
 
 @pytest.fixture
 def app():
