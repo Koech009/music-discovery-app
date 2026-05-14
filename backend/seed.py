@@ -1,21 +1,115 @@
 from app import create_app
-from models import db
+from extensions import db
 from models.user import User
+from models.playlist import Playlist
+from models.favorite import Favorite
+from models.message import Message
 
-app = create_app()
+def seed_data():
+    db.drop_all()
+    db.create_all()
 
-with app.app_context():
-    existing = User.query.filter_by(email='admin@tunely.com').first()
-    if not existing:
-        admin = User(
-            username='admin',
-            email='admin@tunely.com',
-            password='Admin123',
-            role='admin',
-            first_login=True
-        )
-        db.session.add(admin)
-        db.session.commit()
-        print('First admin created: admin@tunely.com / Admin123')
-    else:
-        print('Admin already exists.')
+    # Users
+    admin = User(
+        username="TunelyAdmin",
+        email="tunelyadmin@tunely.com",
+        password="Tunely@123",
+        role="admin",
+        suspended=False,
+        first_login=True
+    )
+    user1 = User(
+        username="Joseph",
+        email="jose@tunely.com",
+        password="Jose@123",
+        role="user",
+        suspended=False,
+        bio="Kenyan music lover",
+        address="46 ELDORET",
+        phone="0749158455"
+    )
+    user2 = User(
+        username="terrence",
+        email="terr@tunely.com",
+        password="Terr@123",
+        role="user",
+        suspended=False
+    )
+    user3 = User(
+        username="Admin04",
+        email="admin4@tunely.com",
+        password="Koech@123",
+        role="admin",
+        suspended=False,
+        bio="rnb lover",
+        address="4606 ELDORET",
+        phone="0742158335"
+    )
+
+    db.session.add_all([admin, user1, user2, user3])
+    db.session.flush()  # get IDs before commit
+
+    # Playlists
+    playlist1 = Playlist(
+        name="Late night vibes",
+        description="Songs that i listen at night while trying to sleep",
+        user_id=admin.id,
+        songs=[]
+    )
+    playlist2 = Playlist(
+        name="Kenyan songs",
+        description="kenyan songs that i love",
+        user_id=admin.id,
+        songs=[]
+    )
+    playlist3 = Playlist(
+        name="late night vibes",
+        description="",
+        user_id=user2.id,
+        songs=[]
+    )
+
+    db.session.add_all([playlist1, playlist2, playlist3])
+
+    # Favorites
+    fav1 = Favorite(
+        user_id=user1.id,
+        title="Malaika",
+        artist_name="Nyashinski",
+        album_title="Malaika",
+        album_cover="https://cdn-images.dzcdn.net/images/cover/0e33fee3141900e69f9d7169e59d3cc1/56x56-000000-80-0-0.jpg",
+        preview_url="https://cdnt-preview.dzcdn.net/api/1/1/4/4/5/0/445bd140354dfb3924bfe353681d1546.mp3",
+        isrc="TCADB1774336",
+        genre="African Music"
+    )
+    fav2 = Favorite(
+        user_id=user1.id,
+        title="Ghost",
+        artist_name="Halsey",
+        album_title="BADLANDS (Deluxe)",
+        album_cover="https://cdn-images.dzcdn.net/images/cover/47165475d4e74cd6fa98f8b83bd90b68/56x56-000000-80-0-0.jpg",
+        preview_url="https://cdnt-preview.dzcdn.net/api/1/1/c/d/1/0/cd1cc3e4800efdaa48aa9137037a9d67.mp3",
+        isrc="USUM71502622",
+        genre="Alternative"
+    )
+
+    # Messages
+    msg1 = Message(
+        name="ian koech",
+        email="ian.kipchirchir1@student.moringaschool.com",
+        content="hello"
+    )
+    msg2 = Message(
+        name="Ian Koech",
+        email="iankipchirchir550@gmail.com",
+        content="having trouble logging in"
+    )
+
+    db.session.add_all([fav1, fav2, msg1, msg2])
+    db.session.commit()
+    print(" Database seeded successfully!")
+
+if __name__ == '__main__':
+    app = create_app()
+    with app.app_context():
+        seed_data()
