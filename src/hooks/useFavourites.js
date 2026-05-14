@@ -1,24 +1,11 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
-
-const BASE_URL = "http://localhost:3002/favorites";
-
-// const BASE_URL = "https://tunely-api.onrender.com/favorites";
-
-// Fetch genre name for a song via Deezer album endpoint
-async function fetchGenreForSong(song) {
-  try {
-    const albumId = song.album?.id;
-    if (!albumId) return "Unknown";
-    const res = await axios.get(`/api/deezer/album/${albumId}`);
-    const genres = res.data?.genres?.data;
-    if (genres && genres.length > 0) return genres[0].name;
-    return "Unknown";
-  } catch {
-    return "Unknown";
-  }
-}
+import {
+  getFavorites,
+  addFavorite as apiAddFavorite,
+  removeFavorite as apiRemoveFavorite,
+  fetchGenreForSong,
+} from "../api/favourites";
 
 export default function useFavorites() {
   const { user } = useAuth();
@@ -30,9 +17,8 @@ export default function useFavorites() {
   useEffect(() => {
     if (!user?.id) return;
     setLoading(true);
-    axios
-      .get(`${BASE_URL}?userId=${user.id}`)
-      .then((res) => setFavorites(res.data))
+    getFavorites(user.id)
+      .then((data) => setFavorites(data))
       .catch(() => setError("Could not load favorites."))
       .finally(() => setLoading(false));
   }, [user?.id]);
@@ -48,17 +34,10 @@ export default function useFavorites() {
     );
     if (alreadyExists) return { duplicate: true };
 
-    // Fetch genre before saving
-    const genre = await fetchGenreForSong(song);
-
     try {
-      const res = await axios.post(BASE_URL, {
-        ...song,
-        userId: user.id,
-        genre, //  saved with the song
-        addedAt: new Date().toISOString(),
-      });
-      setFavorites((prev) => [...prev, res.data]);
+      const genre = await fetchGenreForSong(song);
+      const newFav = await apiAddFavorite(song, user.id, genre);
+      setFavorites((prev) => [...prev, newFav]);
     } catch {
       setError("Could not save favorite.");
     }
@@ -67,7 +46,7 @@ export default function useFavorites() {
   // Remove
   async function removeFavorite(id) {
     try {
-      await axios.delete(`${BASE_URL}/${id}`);
+      await apiRemoveFavorite(id);
       setFavorites((prev) => prev.filter((f) => f.id !== id));
     } catch {
       setError("Could not remove favorite.");

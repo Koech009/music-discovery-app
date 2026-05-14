@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:3002";
+const API_BASE = "/api";
 
 export function useUsers() {
   const [users, setUsers] = useState([]);
@@ -35,15 +35,33 @@ export function useUsers() {
 
   const promoteUser = async (id) => {
     try {
-      const user = users.find((u) => u.id === id);
-      if (!user) return;
-      const updated = { ...user, role: "admin" };
-      await axios.put(`${API_BASE}/users/${id}`, updated);
-      setUsers((prev) => prev.map((u) => (u.id === id ? updated : u)));
+      await axios.patch(`${API_BASE}/admin/users/${id}/promote`);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, role: "admin" } : u)),
+      );
     } catch (err) {
       setError("Failed to promote user.");
     }
   };
 
-  return { users, loading, error, fetchUsers, deleteUser, promoteUser };
+  const suspendUser = async (id) => {
+    try {
+      await axios.patch(`${API_BASE}/admin/users/${id}/suspend`);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, suspended: !u.suspended } : u)),
+      );
+    } catch (err) {
+      setError("Failed to suspend user.");
+    }
+  };
+
+  return {
+    users,
+    loading,
+    error,
+    fetchUsers,
+    deleteUser,
+    promoteUser,
+    suspendUser,
+  };
 }

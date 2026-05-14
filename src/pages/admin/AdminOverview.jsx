@@ -4,7 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import "../../styles/dashboard.css";
 import axios from "axios";
 
-const API_BASE = "http://localhost:3002";
+const API_BASE = "/api";
 
 export default function AdminOverview() {
   const { user } = useAuth(); //  get user from context

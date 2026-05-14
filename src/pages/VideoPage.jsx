@@ -17,16 +17,15 @@ function VideoPage() {
   }, [artist, title]);
 
   const handleBack = () => {
-    if (!user) return navigate("/dashboard/search"); // not logged in
-    if (user.role === "admin") return navigate("/admin/dashboard");
-    return navigate("/dashboard/search"); // regular user
+    if (!user) return navigate("/dashboard/search");
+    if (user.role === "admin") return navigate("/admin/search");
+    return navigate("/dashboard/search");
   };
 
   return (
     <div className="page-container">
-      {/* Smart back button */}
       <button className="back-btn" onClick={handleBack}>
-        ← Back to {user?.role === "admin" ? "Admin Dashboard" : "Search"}
+        ← Back to Search
       </button>
 
       <div className="page-header">

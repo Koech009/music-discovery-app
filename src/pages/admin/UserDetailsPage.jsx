@@ -4,7 +4,7 @@ import { getUserById, toggleSuspendUser, deleteUser } from "../../api/user";
 import axios from "axios";
 import "../../styles/adminUsers.css";
 
-const api = axios.create({ baseURL: "http://localhost:3002" });
+const api = axios.create({ baseURL: "/api" });
 
 function UserDetailsPage() {
   const { id } = useParams();
@@ -101,10 +101,10 @@ function UserDetailsPage() {
             </span>
           </p>
           <p>
-            <strong>Created:</strong> {formatDate(user.createdAt)}
+            <strong>Created:</strong> {formatDate(user.created_at)}
           </p>
           <p>
-            <strong>Last Login:</strong> {formatDate(user.lastLogin)}
+            <strong>Last Login:</strong> {formatDate(user.last_login)}
           </p>
         </div>
 
