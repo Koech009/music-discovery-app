@@ -1,62 +1,56 @@
 from flask import Blueprint, request, jsonify
-from models import db
+from extensions import db
 from models.favorite import Favorite
+from schemas.favorite_schema import favorite_schema, favorites_schema
+from marshmallow import ValidationError
 
-favorite_bp = Blueprint('favorites', __name__)
+favorite_bp = Blueprint("favorites", __name__)
+
+# Get all favorites for a specific user
+# Frontend: GET /favorites?userId=1
 
 
-#Thus returns the favorites of a specific user
-@favorite_bp.route('/<int:user_id>', methods=['GET'])
-def get_user_favorites(user_id):
+@favorite_bp.route("", methods=["GET"])
+def get_user_favorites():
+    user_id = request.args.get('userId', type=int)
+    if not user_id:
+        return jsonify({"error": "userId is required"}), 400
     favorites = Favorite.query.filter_by(user_id=user_id).all()
+    return favorites_schema.jsonify(favorites), 200
 
-    favorites_list = []
-    for fav in favorites:
-        favorites_list.append({
-            'id': fav.id,
-            'user_id': fav.user_id,
-            'song_id': fav.song_id
-        })
-
-    return jsonify(favorites_list), 200
+# Add a new favorite
+# Frontend: POST /favorites { ...song, userId, genre, addedAt }
 
 
-@favorite_bp.route('', methods=['POST'])
+@favorite_bp.route("", methods=["POST"])
 def add_favorite():
     data = request.get_json()
+    try:
+        new_fav = favorite_schema.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages), 400
 
-    if not data.get('user_id') or not data.get('song_id'):
-        return jsonify({'error': 'user_id and song_id are required'}), 400
-
+    # Prevent duplicates
     already_exists = Favorite.query.filter_by(
-        user_id=data['user_id'],
-        song_id=data['song_id']
+        user_id=new_fav.user_id,
+        isrc=new_fav.isrc
     ).first()
-
     if already_exists:
-        return jsonify({'error': 'Song is already in favorites'}), 400
+        return jsonify({"error": "Song is already in favorites"}), 409
 
-    new_favorite = Favorite(
-        user_id=data['user_id'],
-        song_id=data['song_id']
-    )
-
-    db.session.add(new_favorite)
+    db.session.add(new_fav)
     db.session.commit()
+    return favorite_schema.jsonify(new_fav), 201
 
-    return jsonify({'message': 'Song added to favorites', 'favorite_id': new_favorite.id}), 201
+# Remove a favorite
+# Frontend: DELETE /favorites/:id
 
 
-
-# This removes a song from a user favorite
-@favorite_bp.route('/<int:favorite_id>', methods=['DELETE'])
+@favorite_bp.route("/<int:favorite_id>", methods=["DELETE"])
 def remove_favorite(favorite_id):
-    favorite = Favorite.query.get(favorite_id)
-
-    if not favorite:
-        return jsonify({'error': 'Favorite not found'}), 404
-
-    db.session.delete(favorite)
+    fav = Favorite.query.get(favorite_id)
+    if not fav:
+        return jsonify({"error": "Favorite not found"}), 404
+    db.session.delete(fav)
     db.session.commit()
-
-    return jsonify({'message': 'Song removed from favorites'}), 200
+    return jsonify({"message": "Song removed from favorites"}), 200
