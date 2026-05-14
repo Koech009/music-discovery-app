@@ -2,6 +2,7 @@ import pytest
 from flask import Flask
 from unittest.mock import MagicMock, patch
 
+
 def make_app(blueprint, url_prefix):
     app = Flask(__name__)
     app.config['TESTING'] = True
@@ -9,7 +10,10 @@ def make_app(blueprint, url_prefix):
     return app.test_client()
 
 
+# ─────────────────────────────────────────────
 # ADMIN ROUTES
+# ─────────────────────────────────────────────
+
 @patch('routes.admin_routes.User')
 @patch('routes.admin_routes.db')
 def test_get_all_users(mock_db, mock_user):
@@ -21,26 +25,45 @@ def test_get_all_users(mock_db, mock_user):
 
 @patch('routes.admin_routes.User')
 @patch('routes.admin_routes.db')
-def test_create_user_missing_fields(mock_db, mock_user):
+def test_toggle_suspend_not_found(mock_db, mock_user):
+    mock_user.query.get.return_value = None
     from routes.admin_routes import admin_bp
     c = make_app(admin_bp, '/admin')
-    assert c.post('/admin/users', json={'username': 'john'}).status_code == 400
+    assert c.patch('/admin/users/99/suspend').status_code == 404
 
 
 @patch('routes.admin_routes.User')
 @patch('routes.admin_routes.db')
-def test_create_user_success(mock_db, mock_user):
-    mock_user.query.filter_by.return_value.first.return_value = None
-    mock_user.return_value = MagicMock(id=1)
+def test_toggle_suspend_success(mock_db, mock_user):
+    fake_user = MagicMock(username='john', suspended=False)
+    mock_user.query.get.return_value = fake_user
     from routes.admin_routes import admin_bp
     c = make_app(admin_bp, '/admin')
-    res = c.post('/admin/users', json={'username': 'john', 'email': 'j@j.com', 'password': '1234'})
-    assert res.status_code == 201
+    assert c.patch('/admin/users/1/suspend').status_code == 200
 
 
 @patch('routes.admin_routes.User')
 @patch('routes.admin_routes.db')
-def test_delete_user_not_found(mock_db, mock_user):
+def test_promote_user_not_found(mock_db, mock_user):
+    mock_user.query.get.return_value = None
+    from routes.admin_routes import admin_bp
+    c = make_app(admin_bp, '/admin')
+    assert c.patch('/admin/users/99/promote').status_code == 404
+
+
+@patch('routes.admin_routes.User')
+@patch('routes.admin_routes.db')
+def test_promote_user_success(mock_db, mock_user):
+    fake_user = MagicMock(username='john')
+    mock_user.query.get.return_value = fake_user
+    from routes.admin_routes import admin_bp
+    c = make_app(admin_bp, '/admin')
+    assert c.patch('/admin/users/1/promote').status_code == 200
+
+
+@patch('routes.admin_routes.User')
+@patch('routes.admin_routes.db')
+def test_admin_delete_user_not_found(mock_db, mock_user):
     mock_user.query.get.return_value = None
     from routes.admin_routes import admin_bp
     c = make_app(admin_bp, '/admin')
@@ -49,74 +72,157 @@ def test_delete_user_not_found(mock_db, mock_user):
 
 @patch('routes.admin_routes.User')
 @patch('routes.admin_routes.db')
-def test_promote_user(mock_db, mock_user):
-    fake_user = MagicMock(username='john')
-    mock_user.query.get.return_value = fake_user
+def test_admin_delete_user_success(mock_db, mock_user):
+    mock_user.query.get.return_value = MagicMock(username='john')
     from routes.admin_routes import admin_bp
     c = make_app(admin_bp, '/admin')
-    assert c.put('/admin/users/1/promote').status_code == 200
+    assert c.delete('/admin/users/1').status_code == 200
 
 
+# ─────────────────────────────────────────────
 # AUTH ROUTES
+# ─────────────────────────────────────────────
+
+@patch('routes.auth_routes.user_schema')
 @patch('routes.auth_routes.User')
 @patch('routes.auth_routes.db')
-def test_signup_missing_fields(mock_db, mock_user):
+def test_signup_validation_error(mock_db, mock_user, mock_schema):
+    from marshmallow import ValidationError
+    mock_schema.load.side_effect = ValidationError(
+        {'username': ['Missing data']})
     from routes.auth_routes import auth_bp
     c = make_app(auth_bp, '/auth')
     assert c.post('/auth/signup', json={'username': 'john'}).status_code == 400
 
 
+@patch('routes.auth_routes.user_schema')
 @patch('routes.auth_routes.User')
 @patch('routes.auth_routes.db')
-def test_signup_success(mock_db, mock_user):
-    mock_user.query.filter_by.return_value.first.return_value = None
-    mock_user.return_value = MagicMock(id=1)
+def test_signup_duplicate_email(mock_db, mock_user, mock_schema):
+    fake_new_user = MagicMock(email='j@j.com', username='john', password=None)
+    mock_schema.load.return_value = fake_new_user
+    mock_user.query.filter_by.return_value.first.return_value = MagicMock()  # email exists
     from routes.auth_routes import auth_bp
     c = make_app(auth_bp, '/auth')
-    res = c.post('/auth/signup', json={'username': 'john', 'email': 'j@j.com', 'password': '1234'})
+    res = c.post(
+        '/auth/signup', json={'username': 'john', 'email': 'j@j.com', 'password': '1234'})
+    assert res.status_code == 409
+
+
+@patch('routes.auth_routes.user_schema')
+@patch('routes.auth_routes.User')
+@patch('routes.auth_routes.db')
+def test_signup_success(mock_db, mock_user, mock_schema):
+    fake_new_user = MagicMock(email='j@j.com', username='john', password=None)
+    mock_schema.load.return_value = fake_new_user
+    mock_user.query.filter_by.return_value.first.return_value = None
+    mock_schema.jsonify.return_value = ({}, 201)[0]
+    from routes.auth_routes import auth_bp
+    c = make_app(auth_bp, '/auth')
+    res = c.post(
+        '/auth/signup', json={'username': 'john', 'email': 'j@j.com', 'password': '1234'})
     assert res.status_code == 201
 
 
 @patch('routes.auth_routes.User')
 @patch('routes.auth_routes.db')
-def test_login_wrong_password(mock_db, mock_user):
-    fake_user = MagicMock(password='correct')
-    mock_user.query.filter_by.return_value.first.return_value = fake_user
+def test_login_missing_fields(mock_db, mock_user):
     from routes.auth_routes import auth_bp
     c = make_app(auth_bp, '/auth')
-    res = c.post('/auth/login', json={'email': 'j@j.com', 'password': 'wrong'})
-    assert res.status_code == 401
+    assert c.post('/auth/login', json={}).status_code == 400
 
 
 @patch('routes.auth_routes.User')
 @patch('routes.auth_routes.db')
-def test_login_success(mock_db, mock_user):
-    fake_user = MagicMock(password='1234', id=1, username='john', email='j@j.com', role='user', first_login=True)
+def test_login_wrong_password(mock_db, mock_user):
+    fake_user = MagicMock(password='correct', suspended=False)
     mock_user.query.filter_by.return_value.first.return_value = fake_user
     from routes.auth_routes import auth_bp
     c = make_app(auth_bp, '/auth')
-    res = c.post('/auth/login', json={'email': 'j@j.com', 'password': '1234'})
-    assert res.status_code == 200
+    assert c.post(
+        '/auth/login', json={'email': 'j@j.com', 'password': 'wrong'}).status_code == 401
 
 
+@patch('routes.auth_routes.User')
+@patch('routes.auth_routes.db')
+def test_login_suspended(mock_db, mock_user):
+    fake_user = MagicMock(password='1234', suspended=True)
+    mock_user.query.filter_by.return_value.first.return_value = fake_user
+    from routes.auth_routes import auth_bp
+    c = make_app(auth_bp, '/auth')
+    assert c.post(
+        '/auth/login', json={'email': 'j@j.com', 'password': '1234'}).status_code == 403
+
+
+@patch('routes.auth_routes.user_schema')
+@patch('routes.auth_routes.User')
+@patch('routes.auth_routes.db')
+def test_login_success(mock_db, mock_user, mock_schema):
+    fake_user = MagicMock(password='1234', suspended=False)
+    mock_user.query.filter_by.return_value.first.return_value = fake_user
+    from routes.auth_routes import auth_bp
+    c = make_app(auth_bp, '/auth')
+    assert c.post(
+        '/auth/login', json={'email': 'j@j.com', 'password': '1234'}).status_code == 200
+
+
+# ─────────────────────────────────────────────
 # FAVORITE ROUTES
+# ─────────────────────────────────────────────
+
 @patch('routes.favorite_routes.Favorite')
 @patch('routes.favorite_routes.db')
-def test_get_favorites(mock_db, mock_fav):
+def test_get_favorites_missing_user_id(mock_db, mock_fav):
+    from routes.favorite_routes import favorite_bp
+    c = make_app(favorite_bp, '/favorites')
+    assert c.get('/favorites').status_code == 400
+
+
+@patch('routes.favorite_routes.Favorite')
+@patch('routes.favorite_routes.db')
+def test_get_favorites_success(mock_db, mock_fav):
     mock_fav.query.filter_by.return_value.all.return_value = []
     from routes.favorite_routes import favorite_bp
     c = make_app(favorite_bp, '/favorites')
-    assert c.get('/favorites/1').status_code == 200
+    assert c.get('/favorites?userId=1').status_code == 200
 
 
+@patch('routes.favorite_routes.favorite_schema')
 @patch('routes.favorite_routes.Favorite')
 @patch('routes.favorite_routes.db')
-def test_add_favorite_success(mock_db, mock_fav):
-    mock_fav.query.filter_by.return_value.first.return_value = None
-    mock_fav.return_value = MagicMock(id=1)
+def test_add_favorite_validation_error(mock_db, mock_fav, mock_schema):
+    from marshmallow import ValidationError
+    mock_schema.load.side_effect = ValidationError(
+        {'user_id': ['Missing data']})
     from routes.favorite_routes import favorite_bp
     c = make_app(favorite_bp, '/favorites')
-    assert c.post('/favorites', json={'user_id': 1, 'song_id': 10}).status_code == 201
+    assert c.post('/favorites', json={}).status_code == 400
+
+
+@patch('routes.favorite_routes.favorite_schema')
+@patch('routes.favorite_routes.Favorite')
+@patch('routes.favorite_routes.db')
+def test_add_favorite_duplicate(mock_db, mock_fav, mock_schema):
+    fake_fav = MagicMock(user_id=1, isrc='ABC123')
+    mock_schema.load.return_value = fake_fav
+    mock_fav.query.filter_by.return_value.first.return_value = MagicMock()  # already exists
+    from routes.favorite_routes import favorite_bp
+    c = make_app(favorite_bp, '/favorites')
+    assert c.post(
+        '/favorites', json={'user_id': 1, 'isrc': 'ABC123'}).status_code == 409
+
+
+@patch('routes.favorite_routes.favorite_schema')
+@patch('routes.favorite_routes.Favorite')
+@patch('routes.favorite_routes.db')
+def test_add_favorite_success(mock_db, mock_fav, mock_schema):
+    fake_fav = MagicMock(user_id=1, isrc='ABC123')
+    mock_schema.load.return_value = fake_fav
+    mock_fav.query.filter_by.return_value.first.return_value = None
+    from routes.favorite_routes import favorite_bp
+    c = make_app(favorite_bp, '/favorites')
+    assert c.post(
+        '/favorites', json={'user_id': 1, 'isrc': 'ABC123'}).status_code == 201
 
 
 @patch('routes.favorite_routes.Favorite')
@@ -128,23 +234,193 @@ def test_remove_favorite_not_found(mock_db, mock_fav):
     assert c.delete('/favorites/99').status_code == 404
 
 
+@patch('routes.favorite_routes.Favorite')
+@patch('routes.favorite_routes.db')
+def test_remove_favorite_success(mock_db, mock_fav):
+    mock_fav.query.get.return_value = MagicMock()
+    from routes.favorite_routes import favorite_bp
+    c = make_app(favorite_bp, '/favorites')
+    assert c.delete('/favorites/1').status_code == 200
+
+
+# ─────────────────────────────────────────────
+# MESSAGE ROUTES
+# ─────────────────────────────────────────────
+
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_get_messages_no_filter(mock_db, mock_msg):
+    mock_msg.query.all.return_value = []
+    mock_msg.query.filter_by.return_value.all.return_value = []
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.get('/messages').status_code == 200
+
+
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_get_messages_filtered_by_email(mock_db, mock_msg):
+    mock_msg.query.filter_by.return_value.all.return_value = []
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.get('/messages?email=j@j.com').status_code == 200
+
+
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_get_message_not_found(mock_db, mock_msg):
+    mock_msg.query.get.return_value = None
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.get('/messages/99').status_code == 404
+
+
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_get_message_success(mock_db, mock_msg):
+    mock_msg.query.get.return_value = MagicMock()
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.get('/messages/1').status_code == 200
+
+
+@patch('routes.message_routes.message_schema')
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_create_message_validation_error(mock_db, mock_msg, mock_schema):
+    from marshmallow import ValidationError
+    mock_schema.load.side_effect = ValidationError({'email': ['Missing data']})
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.post('/messages', json={}).status_code == 400
+
+
+@patch('routes.message_routes.message_schema')
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_create_message_success(mock_db, mock_msg, mock_schema):
+    mock_schema.load.return_value = MagicMock()
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.post(
+        '/messages', json={'email': 'j@j.com', 'body': 'Hello'}).status_code == 201
+
+
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_update_message_not_found(mock_db, mock_msg):
+    mock_msg.query.get.return_value = None
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.patch('/messages/99', json={'is_read': True}).status_code == 404
+
+
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_update_message_success(mock_db, mock_msg):
+    mock_msg.query.get.return_value = MagicMock(is_read=False)
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.patch('/messages/1', json={'is_read': True}).status_code == 200
+
+
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_delete_message_not_found(mock_db, mock_msg):
+    mock_msg.query.get.return_value = None
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.delete('/messages/99').status_code == 404
+
+
+@patch('routes.message_routes.Message')
+@patch('routes.message_routes.db')
+def test_delete_message_success(mock_db, mock_msg):
+    mock_msg.query.get.return_value = MagicMock()
+    from routes.message_routes import message_bp
+    c = make_app(message_bp, '/messages')
+    assert c.delete('/messages/1').status_code == 200
+
+
+# ─────────────────────────────────────────────
 # PLAYLIST ROUTES
+# ─────────────────────────────────────────────
+
 @patch('routes.playlist_routes.Playlist')
 @patch('routes.playlist_routes.db')
-def test_get_playlists(mock_db, mock_pl):
+def test_get_playlists_missing_user_id(mock_db, mock_pl):
+    from routes.playlist_routes import playlist_bp
+    c = make_app(playlist_bp, '/playlists')
+    assert c.get('/playlists').status_code == 400
+
+
+@patch('routes.playlist_routes.Playlist')
+@patch('routes.playlist_routes.db')
+def test_get_playlists_success(mock_db, mock_pl):
     mock_pl.query.filter_by.return_value.all.return_value = []
     from routes.playlist_routes import playlist_bp
     c = make_app(playlist_bp, '/playlists')
-    assert c.get('/playlists/user/1').status_code == 200
+    assert c.get('/playlists?userId=1').status_code == 200
 
 
 @patch('routes.playlist_routes.Playlist')
 @patch('routes.playlist_routes.db')
-def test_create_playlist_success(mock_db, mock_pl):
-    mock_pl.return_value = MagicMock(id=1)
+def test_get_single_playlist_not_found(mock_db, mock_pl):
+    mock_pl.query.get.return_value = None
     from routes.playlist_routes import playlist_bp
     c = make_app(playlist_bp, '/playlists')
-    assert c.post('/playlists', json={'name': 'My Playlist', 'user_id': 1}).status_code == 201
+    assert c.get('/playlists/99').status_code == 404
+
+
+@patch('routes.playlist_routes.Playlist')
+@patch('routes.playlist_routes.db')
+def test_get_single_playlist_success(mock_db, mock_pl):
+    mock_pl.query.get.return_value = MagicMock()
+    from routes.playlist_routes import playlist_bp
+    c = make_app(playlist_bp, '/playlists')
+    assert c.get('/playlists/1').status_code == 200
+
+
+@patch('routes.playlist_routes.playlist_schema')
+@patch('routes.playlist_routes.Playlist')
+@patch('routes.playlist_routes.db')
+def test_create_playlist_validation_error(mock_db, mock_pl, mock_schema):
+    from marshmallow import ValidationError
+    mock_schema.load.side_effect = ValidationError({'name': ['Missing data']})
+    from routes.playlist_routes import playlist_bp
+    c = make_app(playlist_bp, '/playlists')
+    assert c.post('/playlists', json={}).status_code == 400
+
+
+@patch('routes.playlist_routes.playlist_schema')
+@patch('routes.playlist_routes.Playlist')
+@patch('routes.playlist_routes.db')
+def test_create_playlist_success(mock_db, mock_pl, mock_schema):
+    mock_schema.load.return_value = MagicMock()
+    from routes.playlist_routes import playlist_bp
+    c = make_app(playlist_bp, '/playlists')
+    assert c.post(
+        '/playlists', json={'name': 'My Playlist', 'user_id': 1}).status_code == 201
+
+
+@patch('routes.playlist_routes.Playlist')
+@patch('routes.playlist_routes.db')
+def test_update_playlist_not_found(mock_db, mock_pl):
+    mock_pl.query.get.return_value = None
+    from routes.playlist_routes import playlist_bp
+    c = make_app(playlist_bp, '/playlists')
+    assert c.patch('/playlists/99',
+                   json={'name': 'New Name'}).status_code == 404
+
+
+@patch('routes.playlist_routes.Playlist')
+@patch('routes.playlist_routes.db')
+def test_update_playlist_success(mock_db, mock_pl):
+    mock_pl.query.get.return_value = MagicMock()
+    from routes.playlist_routes import playlist_bp
+    c = make_app(playlist_bp, '/playlists')
+    assert c.patch(
+        '/playlists/1', json={'name': 'New Name'}).status_code == 200
 
 
 @patch('routes.playlist_routes.Playlist')
@@ -156,36 +432,28 @@ def test_delete_playlist_not_found(mock_db, mock_pl):
     assert c.delete('/playlists/99').status_code == 404
 
 
-# SONG ROUTES
-@patch('routes.song_routes.Song')
-@patch('routes.song_routes.db')
-def test_get_songs_in_playlist(mock_db, mock_song):
-    mock_song.query.filter_by.return_value.all.return_value = []
-    from routes.song_routes import song_bp
-    c = make_app(song_bp, '/songs')
-    assert c.get('/songs/playlist/1').status_code == 200
+@patch('routes.playlist_routes.Playlist')
+@patch('routes.playlist_routes.db')
+def test_delete_playlist_success(mock_db, mock_pl):
+    mock_pl.query.get.return_value = MagicMock()
+    from routes.playlist_routes import playlist_bp
+    c = make_app(playlist_bp, '/playlists')
+    assert c.delete('/playlists/1').status_code == 200
 
 
-@patch('routes.song_routes.Song')
-@patch('routes.song_routes.db')
-def test_add_song_success(mock_db, mock_song):
-    mock_song.return_value = MagicMock(id=1)
-    from routes.song_routes import song_bp
-    c = make_app(song_bp, '/songs')
-    res = c.post('/songs', json={'title': 'Song A', 'artist': 'Artist A', 'playlist_id': 1})
-    assert res.status_code == 201
-
-
-@patch('routes.song_routes.Song')
-@patch('routes.song_routes.db')
-def test_delete_song_not_found(mock_db, mock_song):
-    mock_song.query.get.return_value = None
-    from routes.song_routes import song_bp
-    c = make_app(song_bp, '/songs')
-    assert c.delete('/songs/99').status_code == 404
-
-
+# ─────────────────────────────────────────────
 # USER ROUTES
+# ─────────────────────────────────────────────
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_get_users(mock_db, mock_user):
+    mock_user.query.all.return_value = []
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.get('/users').status_code == 200
+
+
 @patch('routes.user_routes.User')
 @patch('routes.user_routes.db')
 def test_get_user_not_found(mock_db, mock_user):
@@ -198,10 +466,57 @@ def test_get_user_not_found(mock_db, mock_user):
 @patch('routes.user_routes.User')
 @patch('routes.user_routes.db')
 def test_get_user_success(mock_db, mock_user):
-    mock_user.query.get.return_value = MagicMock(id=1, username='john', email='j@j.com', role='user', first_login=True, created_at='2024-01-01')
+    mock_user.query.get.return_value = MagicMock(
+        id=1, username='john', email='j@j.com')
     from routes.user_routes import user_bp
     c = make_app(user_bp, '/users')
     assert c.get('/users/1').status_code == 200
+
+
+@patch('routes.user_routes.user_schema')
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_create_user_validation_error(mock_db, mock_user, mock_schema):
+    from marshmallow import ValidationError
+    mock_schema.load.side_effect = ValidationError({'email': ['Missing data']})
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.post('/users', json={'username': 'john'}).status_code == 400
+
+
+@patch('routes.user_routes.user_schema')
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_create_user_duplicate_email(mock_db, mock_user, mock_schema):
+    fake_new_user = MagicMock(email='j@j.com', username='john')
+    mock_schema.load.return_value = fake_new_user
+    mock_user.query.filter_by.return_value.first.return_value = MagicMock()
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.post('/users', json={'username': 'john',
+                  'email': 'j@j.com', 'password': '1234'}).status_code == 409
+
+
+@patch('routes.user_routes.user_schema')
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_create_user_success(mock_db, mock_user, mock_schema):
+    fake_new_user = MagicMock(email='j@j.com', username='john')
+    mock_schema.load.return_value = fake_new_user
+    mock_user.query.filter_by.return_value.first.return_value = None
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.post('/users', json={'username': 'john',
+                  'email': 'j@j.com', 'password': '1234'}).status_code == 201
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_update_user_not_found(mock_db, mock_user):
+    mock_user.query.get.return_value = None
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.patch('/users/99', json={'username': 'new'}).status_code == 404
 
 
 @patch('routes.user_routes.User')
@@ -210,4 +525,93 @@ def test_update_user_success(mock_db, mock_user):
     mock_user.query.get.return_value = MagicMock()
     from routes.user_routes import user_bp
     c = make_app(user_bp, '/users')
-    assert c.put('/users/1', json={'username': 'newname'}).status_code == 200
+    assert c.patch('/users/1', json={'username': 'newname'}).status_code == 200
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_change_password_not_found(mock_db, mock_user):
+    mock_user.query.get.return_value = None
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.patch('/users/99/change-password',
+                   json={'new_password': 'abc'}).status_code == 404
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_change_password_missing_new(mock_db, mock_user):
+    mock_user.query.get.return_value = MagicMock()
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.patch('/users/1/change-password', json={}).status_code == 400
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_change_password_wrong_old(mock_db, mock_user):
+    mock_user.query.get.return_value = MagicMock(password='correct')
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.patch('/users/1/change-password',
+                   json={'old_password': 'wrong', 'new_password': 'new'}).status_code == 400
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_change_password_success(mock_db, mock_user):
+    mock_user.query.get.return_value = MagicMock(password='old')
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.patch('/users/1/change-password',
+                   json={'old_password': 'old', 'new_password': 'new'}).status_code == 200
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_delete_user_not_found(mock_db, mock_user):
+    mock_user.query.get.return_value = None
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.delete('/users/99').status_code == 404
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_delete_user_success(mock_db, mock_user):
+    mock_user.query.get.return_value = MagicMock()
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.delete('/users/1').status_code == 200
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_user_login_invalid(mock_db, mock_user):
+    mock_user.query.filter_by.return_value.first.return_value = None
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.post(
+        '/users/login', json={'email': 'x@x.com', 'password': 'bad'}).status_code == 401
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_user_login_suspended(mock_db, mock_user):
+    mock_user.query.filter_by.return_value.first.return_value = MagicMock(
+        password='1234', suspended=True)
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.post(
+        '/users/login', json={'email': 'j@j.com', 'password': '1234'}).status_code == 403
+
+
+@patch('routes.user_routes.User')
+@patch('routes.user_routes.db')
+def test_user_login_success(mock_db, mock_user):
+    mock_user.query.filter_by.return_value.first.return_value = MagicMock(
+        password='1234', suspended=False)
+    from routes.user_routes import user_bp
+    c = make_app(user_bp, '/users')
+    assert c.post(
+        '/users/login', json={'email': 'j@j.com', 'password': '1234'}).status_code == 200
