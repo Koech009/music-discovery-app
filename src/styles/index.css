@@ -134,6 +134,51 @@ body {
   line-height: 1.5;
 }
 
+
+.favorites-page {
+  padding: 20px;
+}
+
+.page-header {
+  margin-bottom: 20px;
+}
+
+.favorites-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.favorite-card {
+  background: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.favorite-info {
+  margin-bottom: 10px;
+}
+
+.favorite-title {
+  font-weight: bold;
+}
+
+.favorite-artist {
+  font-size: 14px;
+  color: #666;
+}
+
+.remove-btn {
+  background: #e63946;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
 /* ── HOW IT WORKS ── */
 .how-it-works {
   background: #13131a;
@@ -233,7 +278,6 @@ body {
   color: #a0a0b0;
 }
 
-/* Loading spinner shown while API call is in-flight */
 .search-status {
   display: flex;
   flex-direction: column;
@@ -258,7 +302,6 @@ body {
   }
 }
 
-/* Shown when the Deezer API returns an error */
 .search-error {
   text-align: center;
   padding: 1.5rem;
@@ -270,7 +313,6 @@ body {
   font-size: 0.9rem;
 }
 
-/* Shown when search returns zero results */
 .search-empty {
   text-align: center;
   padding: 4rem 0;
@@ -291,7 +333,85 @@ body {
   color: #f0f0f0;
 }
 
-/* Result count line above the card grid */
+
+.search-results {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.song-card {
+  background: #fff;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.song-title {
+  font-weight: bold;
+}
+
+.song-artist {
+  font-size: 14px;
+  color: #666;
+}
+
+.song-actions {
+  margin-top: 8px;
+}
+
+.song-actions button {
+  margin-right: 10px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.song-actions button:first-child {
+  background: #4a4aef;
+  color: #fff;
+}
+
+.song-actions button:last-child {
+  background: #e63946;
+  color: #fff;
+}
+
+.playlist-details {
+  padding: 20px;
+}
+
+.playlist-songs ul,
+.search-results {
+  list-style: none;
+  padding: 0;
+}
+
+.song-card {
+  background: #fff;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.song-card button {
+  margin-left: 10px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  background: #e63946;
+  color: #fff;
+  cursor: pointer;
+}
+
+.add-songs {
+  margin-top: 30px;
+}
+
+
 .results-info {
   font-size: 0.85rem;
   color: #a0a0b0;
@@ -715,6 +835,312 @@ body {
   color: #ffffff;
 }
 
+.about {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+  color: #e8e4dd;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Page title ──────────────────────────── */
+.about h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.6rem, 6vw, 4rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #f5f0ff;
+  margin-bottom: 6px;
+}
+
+.about h1 span {
+  display: block;
+  color: #a78bfa;
+}
+
+.about>p:first-of-type {
+  font-size: 1.05rem;
+  font-weight: 300;
+  color: #9d97a8;
+  line-height: 1.75;
+  margin-bottom: 56px;
+  padding-bottom: 40px;
+  border-bottom: 0.5px solid rgba(167, 139, 250, 0.15);
+}
+
+/* ── Sections ────────────────────────────── */
+.about-section {
+  margin-bottom: 52px;
+  padding-bottom: 52px;
+  border-bottom: 0.5px solid rgba(167, 139, 250, 0.1);
+}
+
+.about-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.about-section h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: #ede9fe;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.about-section h2::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: #a78bfa;
+  margin-bottom: 14px;
+}
+
+.about-section p {
+  font-size: 0.97rem;
+  line-height: 1.8;
+  color: #8c8499;
+  font-weight: 300;
+  margin-top: 12px;
+  max-width: 640px;
+}
+
+/* ── Feature list (What's New) ───────────── */
+.about-section ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.about-section ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 0.5px solid rgba(167, 139, 250, 0.15);
+  border-radius: 12px;
+  background: rgba(167, 139, 250, 0.03);
+  font-size: 0.9rem;
+  color: #c4b5fd;
+  font-weight: 400;
+  line-height: 1.4;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.about-section ul li:hover {
+  border-color: rgba(167, 139, 250, 0.4);
+  background: rgba(167, 139, 250, 0.07);
+}
+
+.about-section ul li::before {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a78bfa;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.contact {
+  max-width: 860px;
+  margin: 0 auto;
+  font-family: 'DM Sans', sans-serif;
+  color: #e8e4dd;
+}
+
+/* ── Header block ────────────────────────── */
+.contact-header {
+  padding: 60px 24px 48px;
+  border-bottom: 0.5px solid rgba(167, 139, 250, 0.15);
+  margin-bottom: 48px;
+}
+
+.contact-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a78bfa;
+  margin-bottom: 18px;
+}
+
+.contact-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: #a78bfa;
+}
+
+.contact h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #f5f0ff;
+  margin-bottom: 20px;
+}
+
+.contact h1 span {
+  color: #a78bfa;
+}
+
+.contact-lead {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.75;
+  color: #9d97a8;
+  max-width: 520px;
+}
+
+/* ── Form body ───────────────────────────── */
+.contact-body {
+  padding: 0 24px 80px;
+  max-width: 560px;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 24px;
+}
+
+.contact-form label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b5fa0;
+}
+
+.contact-form input,
+.contact-form textarea {
+  background: rgba(255, 255, 255, 0.03);
+  border: 0.5px solid rgba(167, 139, 250, 0.2);
+  border-radius: 10px;
+  padding: 13px 16px;
+  color: #e8e4dd;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 300;
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+  width: 100%;
+  resize: vertical;
+}
+
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+  color: #4b4258;
+}
+
+.contact-form input:hover,
+.contact-form textarea:hover {
+  border-color: rgba(167, 139, 250, 0.4);
+  background: rgba(167, 139, 250, 0.04);
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: #a78bfa;
+  background: rgba(167, 139, 250, 0.06);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.12);
+}
+
+.contact-form input.input-error,
+.contact-form textarea.input-error {
+  border-color: rgba(226, 75, 74, 0.55);
+  background: rgba(226, 75, 74, 0.04);
+}
+
+.contact-form input.input-error:focus,
+.contact-form textarea.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(226, 75, 74, 0.12);
+}
+
+/* ── Feedback messages ───────────────────── */
+.form-error-msg {
+  font-size: 0.8rem;
+  color: #f09595;
+  margin: 0;
+  padding-left: 2px;
+}
+
+.form-error-box {
+  background: rgba(226, 75, 74, 0.08);
+  border: 0.5px solid rgba(226, 75, 74, 0.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: #f09595;
+  font-size: 0.88rem;
+  margin-bottom: 24px;
+}
+
+.form-success-box {
+  background: rgba(29, 158, 117, 0.08);
+  border: 0.5px solid rgba(29, 158, 117, 0.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: #5dcaa5;
+  font-size: 0.88rem;
+  margin-bottom: 24px;
+}
+
+/* ── Submit button ───────────────────────── */
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 36px;
+  background: #7c3aed;
+  color: #f5f0ff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, transform 0.15s, opacity 0.2s;
+  margin-top: 8px;
+  align-self: flex-start;
+}
+
+.cta-btn:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+.cta-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.cta-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+
 /* ── VIDEO PAGE ── */
 .back-btn {
   display: inline-flex;
@@ -738,7 +1164,6 @@ body {
   color: #ffffff;
 }
 
-/* 16:9 responsive iframe container */
 .video-wrapper {
   position: relative;
   width: 100%;
@@ -778,4 +1203,38 @@ body {
   .steps {
     gap: 2rem;
   }
+}
+
+.badge-new {
+  display: inline-block;
+  background: #2d1f5e;
+  color: #a78bfa;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 20px;
+  vertical-align: middle;
+  margin-left: 8px;
+  letter-spacing: 0.03em;
+}
+
+.feature-grid--two-col {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.cta-login-hint {
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  color: #555570;
+}
+
+.cta-link {
+  color: #a78bfa;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.cta-link:hover {
+  color: #c4b5fd;
 }

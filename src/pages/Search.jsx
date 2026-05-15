@@ -10,7 +10,6 @@ function Search() {
   const [query, setQuery] = useState("");
   const { results, search, loading, error } = useDeezerSearch();
 
-  // Trigger search from SearchBar and store the query for empty state message
   const handleSearch = (q) => {
     setQuery(q);
     search(q);

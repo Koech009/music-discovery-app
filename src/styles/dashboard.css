@@ -1,0 +1,486 @@
+/* ── DASHBOARD LAYOUT ── */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #0f0f14;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: #0a0a0f;
+    border-right: 1px solid #1a0a0a;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid #1a0a0a;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.sidebar nav {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    overflow-y: auto;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sidebar-section-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4a2a2a;
+    padding: 1rem 0.75rem 0.4rem;
+}
+
+.sidebar nav ul li a,
+.sidebar nav ul li button.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    color: #8a7070;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    transition: all 0.15s;
+    text-align: left;
+}
+
+.sidebar nav ul li a:hover,
+.sidebar nav ul li button.sidebar-link:hover {
+    background: rgba(220, 38, 38, 0.08);
+    color: #f87171;
+}
+
+.sidebar nav ul li a.active {
+    background: rgba(220, 38, 38, 0.12);
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.sidebar nav ul li a.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 3px;
+    height: 32px;
+    background: #ef4444;
+    border-radius: 0 3px 3px 0;
+}
+
+.sidebar nav ul li {
+    position: relative;
+}
+
+/* ── SIDEBAR LOGOUT ── */
+.sidebar-footer {
+    padding: 0.75rem;
+    border-top: 1px solid #1a0a0a;
+    margin-top: auto;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    background: rgba(220, 38, 38, 0.06);
+    border: 1px solid rgba(220, 38, 38, 0.15);
+    color: #ef4444;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+}
+
+.logout-btn:hover {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #f87171;
+}
+
+/* ── MAIN CONTENT ── */
+.dashboard-content {
+    flex: 1;
+    margin-left: 240px;
+    min-height: 100vh;
+    background: #0f0f14;
+    padding: 2.5rem 2.5rem;
+}
+
+/* ── DASHBOARD HOME PAGE ── */
+.dashboard-page {
+    max-width: 900px;
+}
+
+.dashboard-page h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.4rem;
+}
+
+.dashboard-sub {
+    color: #6a4a4a;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.dashboard-card {
+    background: #13131a;
+    border: 1px solid #2a1a1a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.dashboard-card:hover {
+    border-color: rgba(220, 38, 38, 0.4);
+    transform: translateY(-2px);
+}
+
+.dashboard-card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-card p {
+    font-size: 0.8rem;
+    color: #6a5a5a;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.dashboard-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #ef4444;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.dashboard-link:hover {
+    color: #f87171;
+}
+
+/* ── PAGE HEADER (inside dashboard) ── */
+.dashboard-page-header {
+    margin-bottom: 2rem;
+}
+
+.dashboard-page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.3rem;
+}
+
+.dashboard-page-header p {
+    color: #6a4a4a;
+    font-size: 0.875rem;
+}
+
+/* ── SONG CARDS (Search results, Favourites) ── */
+.song-card {
+    background: #13131a;
+    border: 1px solid #2a1a1a;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s;
+}
+
+.song-card:hover {
+    border-color: rgba(220, 38, 38, 0.35);
+}
+
+.song-title {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.song-artist {
+    font-size: 0.78rem;
+    color: #6a5a5a;
+    margin-top: 2px;
+}
+
+.song-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0;
+}
+
+.song-actions button {
+    padding: 0.4rem 0.85rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+
+.song-actions button:first-child {
+    background: rgba(124, 58, 237, 0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(124, 58, 237, 0.25);
+}
+
+.song-actions button:first-child:hover {
+    background: rgba(124, 58, 237, 0.25);
+}
+
+.song-actions button:last-child {
+    background: rgba(220, 38, 38, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.song-actions button:last-child:hover {
+    background: rgba(220, 38, 38, 0.2);
+}
+
+/* ── FAVOURITE CARDS ── */
+.favourite-card {
+    background: #13131a;
+    border: 1px solid #2a1a1a;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s;
+}
+
+.favourite-card:hover {
+    border-color: rgba(220, 38, 38, 0.35);
+}
+
+.favourite-title {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.favourite-artist {
+    font-size: 0.78rem;
+    color: #6a5a5a;
+    margin-top: 2px;
+}
+
+.remove-btn {
+    background: transparent;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    color: #ef4444;
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+
+.remove-btn:hover {
+    background: rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.45);
+}
+
+/* ── SEARCH BAR ── */
+.search-bar-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-bar-row input {
+    flex: 1;
+    background: #13131a;
+    border: 1px solid #2a1a1a;
+    border-radius: 10px;
+    padding: 0.75rem 1.1rem;
+    color: #f0f0f0;
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-bar-row input:focus {
+    border-color: #ef4444;
+}
+
+.search-bar-row input::placeholder {
+    color: #4a3a3a;
+}
+
+.search-bar-row button {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 1.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+
+.search-bar-row button:hover {
+    background: #b91c1c;
+}
+
+/* ── PROFILE FORM (inside dashboard) ── */
+.profile-card {
+    background: #13131a;
+    border: 1px solid #2a1a1a;
+    border-radius: 14px;
+    padding: 2rem;
+    max-width: 560px;
+}
+
+.profile-card .form-group label {
+    color: #6a4a4a;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.profile-card .form-group input,
+.profile-card .form-group textarea {
+    background: #0a0a0f;
+    border: 1px solid #2a1a1a;
+    border-radius: 8px;
+    color: #f0f0f0;
+    transition: border-color 0.2s;
+}
+
+.profile-card .form-group input:focus,
+.profile-card .form-group textarea:focus {
+    border-color: #ef4444;
+    outline: none;
+}
+
+.profile-save-btn {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.7rem 2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+    margin-top: 0.5rem;
+}
+
+.profile-save-btn:hover {
+    background: #b91c1c;
+}
+
+/* ── TRENDING (dashboard) ── */
+.trending-card {
+    background: #13131a;
+    border: 1px solid #2a1a1a;
+    border-radius: 10px;
+}
+
+.trending-card:hover {
+    border-color: rgba(220, 38, 38, 0.35);
+}
+
+.trending-rank {
+    color: #ef4444;
+}
+
+/* ── GENRE BUTTONS (dashboard) ── */
+.genre-btn {
+    background: #13131a;
+    border: 1px solid #2a1a1a;
+    color: #6a5a5a;
+}
+
+.genre-btn:hover {
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #ffffff;
+}
+
+.genre-btn.active {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+}
+
+/* ── SPINNER ── */
+.spinner {
+    border-top-color: #ef4444;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .dashboard-content {
+        margin-left: 200px;
+        padding: 1.5rem;
+    }
+}

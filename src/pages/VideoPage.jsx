@@ -1,37 +1,42 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import useYoutubeVideo from "../hooks/useYoutubeVideo.js";
+import { useAuth } from "../contexts/AuthContext";
 import Loader from "../components/Loader.jsx";
 import ErrorMessages from "../components/ErrorMessages.jsx";
+import "../styles/index.css";
 
 function VideoPage() {
   const { artist, title } = useParams();
   const { videoId, loading, error, fetchVideoId } = useYoutubeVideo();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch YouTube video ID on mount using artist and title from URL params
   useEffect(() => {
     fetchVideoId(artist, title);
   }, [artist, title]);
 
+  const handleBack = () => {
+    if (!user) return navigate("/dashboard/search"); // not logged in
+    if (user.role === "admin") return navigate("/admin/dashboard");
+    return navigate("/dashboard/search"); // regular user
+  };
+
   return (
     <div className="page-container">
-      {/* Back button */}
-      <button className="back-btn" onClick={() => navigate("/search")}>
-        ← Back to Search
+      {/* Smart back button */}
+      <button className="back-btn" onClick={handleBack}>
+        ← Back to {user?.role === "admin" ? "Admin Dashboard" : "Search"}
       </button>
 
-      {/* Song title and artist — decode URL encoded characters */}
       <div className="page-header">
         <h1>{decodeURIComponent(title)}</h1>
         <p>{decodeURIComponent(artist)}</p>
       </div>
 
-      {/* Loading and error states */}
       {loading && <Loader />}
       {error && <ErrorMessages message={error} />}
 
-      {/* Responsive 16:9 YouTube embed */}
       {videoId && (
         <div className="video-wrapper">
           <iframe
