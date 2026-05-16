@@ -4,7 +4,8 @@ import { getUserById, toggleSuspendUser, deleteUser } from "../../api/user";
 import axios from "axios";
 import "../../styles/adminUsers.css";
 
-const api = axios.create({ baseURL: "/api" });
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const api = axios.create({ baseURL: `${baseURL}/api` });
 
 function UserDetailsPage() {
   const { id } = useParams();

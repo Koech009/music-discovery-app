@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE = "/api";
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE = `${baseURL}/api`;
 
 // Fetch genre name for a song via Deezer album endpoint
 export async function fetchGenreForSong(song) {
@@ -16,7 +17,6 @@ export async function fetchGenreForSong(song) {
   }
 }
 
-// API calls
 export async function getFavorites(userId) {
   const res = await axios.get(`${API_BASE}/favorites?userId=${userId}`);
   return res.data;

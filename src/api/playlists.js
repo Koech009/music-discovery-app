@@ -1,6 +1,6 @@
-const API_BASE = "/api";
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE = `${baseURL}/api`;
 const BASE_URL = `${API_BASE}/playlists`;
-const jsonHeaders = { "Content-Type": "application/json" };
 
 const toId = (id) => {
   if (!id && id !== 0) throw new Error(`Invalid playlist ID: "${id}"`);
@@ -10,7 +10,7 @@ const toId = (id) => {
 const patch = async (id, body) => {
   const response = await fetch(`${BASE_URL}/${toId(id)}`, {
     method: "PATCH",
-    headers: jsonHeaders,
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error(`Failed to update playlist ${id}`);
@@ -39,7 +39,7 @@ export async function createPlaylist(name, description = "", userId) {
 
   const response = await fetch(BASE_URL, {
     method: "POST",
-    headers: jsonHeaders,
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: name.trim(),
       description: description.trim(),
