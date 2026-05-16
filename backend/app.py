@@ -3,24 +3,24 @@ from flask_cors import CORS
 from config import Config
 from extensions import db, migrate
 
-# Import models so Alembic detects them
 from models.user import User
 from models.playlist import Playlist
 from models.favorite import Favorite
 from models.message import Message
 
-def create_app():
+
+def create_app(config=None):
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Enable CORS
+    if config:
+        app.config.update(config)
+
     CORS(app)
 
-    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Register blueprints
     from routes.auth_routes import auth_bp
     from routes.user_routes import user_bp
     from routes.admin_routes import admin_bp
@@ -36,6 +36,7 @@ def create_app():
     app.register_blueprint(message_bp, url_prefix='/api/messages')
 
     return app
+
 
 if __name__ == '__main__':
     app = create_app()

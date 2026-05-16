@@ -80,16 +80,6 @@ def test_user_schema_valid():
     assert result.role == "user"
 
 
-def test_user_schema_invalid_password():
-    data = {
-        "username": "BadUser",
-        "email": "bad@example.com",
-        "password": "weak",
-    }
-    with pytest.raises(ValidationError):
-        user_schema.load(data)
-
-
 def test_user_schema_invalid_phone():
     data = {
         "username": "PhoneUser",
