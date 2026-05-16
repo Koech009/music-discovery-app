@@ -58,4 +58,4 @@ migrations/
 *.swp
 *.swo
 .env
-.venv
+.venvdb.json
