@@ -4,6 +4,7 @@ import {
   getUserById,
   updateUser,
   deleteUser as apiDeleteUser,
+  changeUserPassword,
 } from "../api/user.js";
 //custom hook that provides admin user management functionality. It allows fetching all users, fetching details of a single user, updating user fields, changing passwords, toggling suspension status, and deleting users. It also manages loading and error states for these operations.
 export function useAdminUsers() {

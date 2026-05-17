@@ -4,7 +4,6 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
 
-  // Disable OXC transformer so React plugin handles JSX in .js test files
   oxc: false,
 
   test: {
@@ -15,6 +14,33 @@ export default defineConfig({
 
   server: {
     proxy: {
+      // Flask backend
+      "/api/auth": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+      "/api/users": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+      "/api/playlists": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+      "/api/favorites": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+      "/api/messages": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+      "/api/admin": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+
+      // External APIs
       "/api/deezer": {
         target: "https://api.deezer.com",
         changeOrigin: true,
