@@ -23,7 +23,33 @@ def get_messages():
 @message_bp.route('', methods=['GET'])
 @jwt_required()
 def get_messages_by_pagination():
-    pass
+    query = Message.query
+    
+    email = request.args.get("email")
+    if email:
+        query = query.filter_by(email=email)
+        
+    page = request.args.get("page", default=1, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+    
+    pagination = query.paginate(
+        page=page, 
+        per_page=limit, 
+        error_out=False
+    )
+    
+    return jsonify({
+        'success': True,
+        'metadata': {
+            'total_items': pagination.total,
+            'total_pages': pagination.pages,
+            'current_page': pagination.page,
+            'limit': pagination.per_page,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        },
+        'messages': messages_schema.dump(pagination.items)
+    }), 200
 
 # Get a single message by ID
 
