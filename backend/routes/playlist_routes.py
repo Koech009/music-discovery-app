@@ -28,7 +28,28 @@ def get_playlists():
 @playlist_bp.route('', methods=['GET'])
 @jwt_required()
 def get_playlists_by_pagination():
-    pass
+    user_id = request.args.get('userId', type=int)
+    if not user_id:
+        return jsonify({'error': 'userId is required'}), 400
+    
+    page = request.args.get('page', default=1, type=int)
+    limit = request.args.get('limit', default=10, type=int)
+    
+
+    pagination = Playlist.query.filter_by(user_id=user_id).paginate(page = page, per_page = limit, error_out = False)
+    
+    return jsonify({
+        'success': True,
+        'metadata': {
+            'total_items': pagination.total,
+            'total_pages': pagination.pages,
+            'current_page': pagination.page,
+            'limit': pagination.per_page,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        },
+        'playlists': playlists_schema.dump(pagination.items)  
+    }), 200
 
 
 # GET single playlist by ID
