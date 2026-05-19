@@ -12,7 +12,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         model = User
         load_instance = True
         sqla_session = db.session
-        exclude = ('password',)
+        exclude = ('password',)  # never expose password
         unknown = EXCLUDE
 
     # Read-only fields
@@ -28,6 +28,8 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     password = fields.String(required=True, load_only=True)
     role = fields.String(validate=validate.OneOf(
         ["user", "admin"]), load_default="user")
+
+    approved = fields.Boolean(dump_only=True)
 
     # Optional fields
     bio = fields.String(validate=validate.Length(max=500))

@@ -69,7 +69,7 @@ function Login() {
         navigate(user.role === "admin" ? "/admin/overview" : "/dashboard");
       }, 1000);
     } catch (err) {
-      setSubmitError(err.message);
+      setSubmitError(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
