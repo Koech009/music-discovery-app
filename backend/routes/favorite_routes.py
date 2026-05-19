@@ -18,6 +18,12 @@ def get_user_favorites():
     favorites = Favorite.query.filter_by(user_id=user_id).all()
     return favorites_schema.jsonify(favorites), 200
 
+
+# GET route with pagination providing query parameters
+@favorite_bp.route('', methods=['GET'])
+def get_favorites_by_pagination():
+    pass
+
 # Add a new favorite
 # Frontend: POST /favorites { ...song, userId, genre, addedAt }
 

@@ -17,6 +17,12 @@ def get_messages():
         query = query.filter_by(email=email)
     return messages_schema.jsonify(query.all()), 200
 
+
+# GET route with pagination providing query parameters
+@message_bp.route('', methods=['GET'])
+def get_messages_by_pagination():
+    pass
+
 # Get a single message by ID
 
 

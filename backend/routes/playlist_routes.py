@@ -6,8 +6,12 @@ from marshmallow import ValidationError
 
 playlist_bp = Blueprint('playlists', __name__)
 
+
+
+
 # GET all playlists for a user
 # Frontend: GET /playlists?userId=1
+
 
 
 @playlist_bp.route('', methods=['GET'])
@@ -18,9 +22,15 @@ def get_playlists():
     playlists = Playlist.query.filter_by(user_id=user_id).all()
     return playlists_schema.jsonify(playlists), 200
 
+
+# GET route with pagination providing query parameters
+@playlist_bp.route('', methods=['GET'])
+def get_playlists_by_pagination():
+    pass
+
+
 # GET single playlist by ID
 # Frontend: GET /playlists/:id
-
 
 @playlist_bp.route('/<int:id>', methods=['GET'])
 def get_playlist(id):
