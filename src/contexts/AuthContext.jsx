@@ -7,24 +7,28 @@ const API_BASE = `${baseURL}/api`;
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("tunely_user")) || null;
-    } catch {
-      return null;
-    }
-  });
+const [user, setUser] = useState(() => {
+  try {
+    return JSON.parse(localStorage.getItem("tunely_user")) || null;
+  } catch {
+    return null;
+  }
+});
+
+const [token, setToken] = useState(() => {
+  return localStorage.getItem("token") || null;
+});
 
   const login = async (email, password) => {
-    try {
-      const res = await axios.post(`${API_BASE}/auth/login`, {
-        email,
-        password,
-      });
-
+  try {
+    const res = await axios.post(`${API_BASE}/auth/login`, {
+      email,
+      password,
+    });
+    
       const loggedInUser = res.data;
 
-      // ✅ Only block admins if not approved
+      //  Only block admins if not approved
       if (loggedInUser.role === "admin" && !loggedInUser.approved) {
         throw new Error(
           "Your admin account is pending approval. Contact an existing admin.",
@@ -46,20 +50,28 @@ export function AuthProvider({ children }) {
         throw new Error(message || "Access denied.");
       }
       throw new Error("Cannot connect to server. Please try again.");
+      
     }
-  };
+    if (err.response?.status === 403) {
+      throw new Error("Your account has been suspended.");
+    }
+    throw new Error("Cannot connect to server. Please try again.");
+  }
+};
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("tunely_user");
+    localStorage.removeItem("token");
   };
 
   const hasRole = (role) => user?.role === role;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, hasRole }}>
-      {children}
-    </AuthContext.Provider>
+<AuthContext.Provider value={{ user, token, login, logout, hasRole }}>
+  {children}
+</AuthContext.Provider>
   );
 }
 
