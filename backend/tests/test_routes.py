@@ -33,9 +33,7 @@ def _json_resp(payload=None, status=200):
 
 # ─────────────────────────────────────────────
 # ADMIN ROUTES
-# Decorator order reminder:
-#   @patch('...User')   → mock_user  (2nd param)
-#   @patch('...db')     → mock_db    (1st param)
+
 # ─────────────────────────────────────────────
 
 @patch('routes.admin_routes.User')
