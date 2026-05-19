@@ -3,6 +3,7 @@ from extensions import db
 from models.message import Message
 from schemas.message_schema import message_schema, messages_schema
 from marshmallow import ValidationError
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 message_bp = Blueprint("messages", __name__)
 
@@ -20,6 +21,7 @@ def get_messages():
 
 # GET route with pagination providing query parameters
 @message_bp.route('', methods=['GET'])
+@jwt_required()
 def get_messages_by_pagination():
     pass
 

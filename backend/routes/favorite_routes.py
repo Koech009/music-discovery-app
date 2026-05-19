@@ -3,6 +3,7 @@ from extensions import db
 from models.favorite import Favorite
 from schemas.favorite_schema import favorite_schema, favorites_schema
 from marshmallow import ValidationError
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 favorite_bp = Blueprint("favorites", __name__)
 
@@ -21,6 +22,7 @@ def get_user_favorites():
 
 # GET route with pagination providing query parameters
 @favorite_bp.route('', methods=['GET'])
+@jwt_required()
 def get_favorites_by_pagination():
     pass
 

@@ -3,6 +3,7 @@ from extensions import db
 from models.playlist import Playlist
 from schemas.playlist_schema import playlist_schema, playlists_schema
 from marshmallow import ValidationError
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 playlist_bp = Blueprint('playlists', __name__)
 
@@ -25,6 +26,7 @@ def get_playlists():
 
 # GET route with pagination providing query parameters
 @playlist_bp.route('', methods=['GET'])
+@jwt_required()
 def get_playlists_by_pagination():
     pass
 
