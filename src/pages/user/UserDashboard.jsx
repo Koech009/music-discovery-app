@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import Pagination from "../components/Pagination";
+import Pagination from "../../components/Pagination";
 import "../../styles/dashboard.css";
 
 export default function UserDashboard() {
   const { user } = useAuth();
 
-  // 1. Pagination & Data States
   const [playlistPage, setPlaylistPage] = useState(1);
   const [playlists, setPlaylists] = useState([]);
   const [playlistMeta, setPlaylistMeta] = useState(null);
@@ -16,11 +15,11 @@ export default function UserDashboard() {
   const [favourites, setFavourites] = useState([]);
   const [favouriteMeta, setFavouriteMeta] = useState(null);
 
-  // 2. Fetch Playlists when page or user changes
+
   useEffect(() => {
     if (!user?.id) return;
 
-    const token = localStorage.getItem("token"); // Pulling JWT auth token
+    const token = localStorage.getItem("token");
     fetch(`/api/playlists?userId=${user.id}&page=${playlistPage}&limit=3`, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -34,7 +33,6 @@ export default function UserDashboard() {
       .catch((err) => console.error("Error fetching playlists:", err));
   }, [user?.id, playlistPage]);
 
-  // 3. Fetch Favourites when page or user changes
   useEffect(() => {
     if (!user?.id) return;
 
@@ -68,7 +66,6 @@ export default function UserDashboard() {
           </Link>
         </div>
 
-        {/* Dynamic Paginated Playlists Card */}
         <div className="dashboard-card">
           <h2>My Playlists</h2>
           {playlists.length === 0 ? (
@@ -86,7 +83,7 @@ export default function UserDashboard() {
           </Link>
         </div>
 
-        {/* Dynamic Paginated Favourites Card */}
+  
         <div className="dashboard-card">
           <h2>Favourites</h2>
           {favourites.length === 0 ? (
