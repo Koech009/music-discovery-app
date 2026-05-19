@@ -37,6 +37,10 @@ export default function DashboardLayout() {
                 </li>
 
                 <li>
+                  <NavLink to="/admin/pending">Pending Accounts</NavLink>
+                </li>
+
+                <li>
                   <NavLink to="/admin/genres">Genres</NavLink>
                 </li>
 
@@ -53,6 +57,9 @@ export default function DashboardLayout() {
                 </li>
                 <li>
                   <NavLink to="/admin/messages">Messages</NavLink>
+                </li>
+                <li>
+                  <NavLink to="/admin/audit">Audit Logs</NavLink>
                 </li>
 
                 <li>
