@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from config import Config
-from extensions import db, migrate
+from extensions import db, migrate, bcrypt, jwt
 
 from models.user import User
 from models.playlist import Playlist
@@ -20,7 +20,8 @@ def create_app(config=None):
 
     db.init_app(app)
     migrate.init_app(app, db)
-
+    bcrypt.init_app(app)
+    jwt.init_app(app)
     from routes.auth_routes import auth_bp
     from routes.user_routes import user_bp
     from routes.admin_routes import admin_bp
