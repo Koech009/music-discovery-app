@@ -24,6 +24,8 @@ import AdminOverview from "../pages/admin/AdminOverview.jsx";
 import AdminUsers from "../pages/admin/AdminManageUsers.jsx";
 import AdminMessages from "../pages/admin/AdminMessages";
 import UserDetailsPage from "../pages/admin/UserDetailsPage";
+import PendingAdmins from "../pages/admin/PendingAdmin.jsx";
+import AdminAuditLogs from "../pages/admin/AdminAuditLogs.jsx";
 
 function App() {
   return (
@@ -85,6 +87,8 @@ function App() {
           <Route path="favourites" element={<Favourites />} />
           <Route path="playlists" element={<Playlists />} />
           <Route path="messages" element={<AdminMessages />} />
+          <Route path="pending" element={<PendingAdmins />} />
+          <Route path="audit" element={<AdminAuditLogs />} />
           <Route path="profile" element={<Profile />} />
           <Route path="/admin/users/:id" element={<UserDetailsPage />} />
         </Route>

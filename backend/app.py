@@ -7,6 +7,7 @@ from models.user import User
 from models.playlist import Playlist
 from models.favorite import Favorite
 from models.message import Message
+from models.audit_log import AuditLog
 
 
 def create_app(config=None):
@@ -27,6 +28,7 @@ def create_app(config=None):
     from routes.playlist_routes import playlist_bp
     from routes.favorite_routes import favorite_bp
     from routes.message_routes import message_bp
+    from routes.audit_routes import audit_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/users')
@@ -34,6 +36,7 @@ def create_app(config=None):
     app.register_blueprint(playlist_bp, url_prefix='/api/playlists')
     app.register_blueprint(favorite_bp, url_prefix='/api/favorites')
     app.register_blueprint(message_bp, url_prefix='/api/messages')
+    app.register_blueprint(audit_bp, url_prefix='/api/admin/audit')
 
     return app
 

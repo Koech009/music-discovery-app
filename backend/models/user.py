@@ -12,6 +12,10 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default='user')
 
+    # admin approval field
+    # approved = db.Column(db.Boolean, default=True)
+    approved = db.Column(db.Boolean, nullable=False, default=False)
+
     # Profile fields
     bio = db.Column(db.Text)
     avatar_url = db.Column(db.String(255))
@@ -38,6 +42,12 @@ class User(db.Model):
         cascade='all, delete-orphan'
     )
 
+    audit_logs = db.relationship(
+        "AuditLog",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f'<User {self.username}>'
 
@@ -48,6 +58,7 @@ class User(db.Model):
             'username': self.username,
             'email': self.email,
             'role': self.role,
+            'approved': self.approved,
             'bio': self.bio,
             'avatar_url': self.avatar_url,
             'address': self.address,

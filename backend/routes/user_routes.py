@@ -4,20 +4,19 @@ from models.user import User
 from schemas.user_schema import user_schema, users_schema
 from marshmallow import ValidationError
 from datetime import datetime
+from routes.audit_routes import log_action
 
 user_bp = Blueprint('users', __name__)
 
+
 # GET all users
-
-
 @user_bp.route('', methods=['GET'])
 def get_users():
     users = User.query.all()
     return users_schema.jsonify(users), 200
 
+
 # GET single user by id
-
-
 @user_bp.route('/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = User.query.get(user_id)
@@ -25,9 +24,8 @@ def get_user(user_id):
         return jsonify({'error': 'User not found'}), 404
     return user_schema.jsonify(user), 200
 
+
 # POST create new user
-
-
 @user_bp.route('', methods=['POST'])
 def create_user():
     data = request.get_json()
@@ -47,9 +45,8 @@ def create_user():
     db.session.commit()
     return user_schema.jsonify(new_user), 201
 
+
 # PATCH update user profile
-
-
 @user_bp.route('/<int:user_id>', methods=['PATCH'])
 def update_user(user_id):
     user = User.query.get(user_id)
@@ -57,6 +54,7 @@ def update_user(user_id):
         return jsonify({'error': 'User not found'}), 404
 
     data = request.get_json()
+    actor_id = data.get('actorId', user_id)
 
     if 'username' in data:
         user.username = data['username']
@@ -70,20 +68,53 @@ def update_user(user_id):
         user.phone = data['phone']
     if 'avatar_url' in data:
         user.avatar_url = data['avatar_url']
-    if 'suspended' in data:
-        user.suspended = data['suspended']
     if 'last_login' in data:
         user.last_login = datetime.fromisoformat(data['last_login'])
+
     if 'role' in data and data['role'] in ['user', 'admin']:
+        old_role = user.role
         user.role = data['role']
+        log_action(
+            user_id=actor_id,
+            action="CHANGE_ROLE",
+            target_type="User",
+            target_id=user_id,
+            details=f"Changed {user.username}'s role from {old_role} to {data['role']}"
+        )
+
+    if 'suspended' in data:
+        user.suspended = data['suspended']
+        action = "SUSPEND_USER" if data['suspended'] else "UNSUSPEND_USER"
+        log_action(
+            user_id=actor_id,
+            action=action,
+            target_type="User",
+            target_id=user_id,
+            details=f"{action.lower().replace('_', ' ')}: {user.username}"
+        )
+
+    if 'role' not in data and 'suspended' not in data:
+        log_action(
+            user_id=actor_id,
+            action="UPDATE_PROFILE",
+            target_type="User",
+            target_id=user_id,
+            details=f"{user.username} updated their profile"
+        )
 
     user.first_login = False
-    db.session.commit()
+
+    # FIX: single commit saves all field changes + audit log atomically
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Update failed', 'details': str(e)}), 500
+
     return user_schema.jsonify(user), 200
 
+
 # PATCH change password
-
-
 @user_bp.route('/<int:user_id>/change-password', methods=['PATCH'])
 def change_password(user_id):
     user = User.query.get(user_id)
@@ -97,44 +128,56 @@ def change_password(user_id):
     if not new_password:
         return jsonify({'error': 'New password is required.'}), 400
 
-    # Profile page sends old_password — verify it
     if old_password is not None:
         if user.password != old_password:
             return jsonify({'error': 'Old password is incorrect.'}), 400
 
     user.password = new_password
-    db.session.commit()
+
+    # FIX: log before commit
+    log_action(
+        user_id=user_id,
+        action="CHANGE_PASSWORD",
+        target_type="User",
+        target_id=user_id,
+        details=f"{user.username} changed their password"
+    )
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Password change failed', 'details': str(e)}), 500
+
     return jsonify({'message': 'Password updated successfully'}), 200
 
+
 # DELETE user
-
-
 @user_bp.route('/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
+
+    username = user.username
+    actor_id = request.get_json(silent=True) or {}
+    actor_id = actor_id.get('actorId', user_id)
+
+    # FIX: log before delete+commit — user.id still valid here
+    log_action(
+        user_id=actor_id,
+        action="DELETE_ACCOUNT",
+        target_type="User",
+        target_id=user_id,
+        details=f"User account deleted: {username}"
+    )
+
     db.session.delete(user)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Delete failed', 'details': str(e)}), 500
+
     return jsonify({'message': 'User deleted successfully'}), 200
-
-# POST login
-
-
-@user_bp.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    email = data.get('email', '').lower()
-    password = data.get('password')
-
-    user = User.query.filter_by(email=email).first()
-    if not user or user.password != password:
-        return jsonify({'error': 'Invalid email or password'}), 401
-
-    if user.suspended:
-        return jsonify({'error': 'Account is suspended'}), 403
-
-    user.last_login = datetime.utcnow()
-    db.session.commit()
-
-    return user_schema.jsonify(user), 200

@@ -18,21 +18,35 @@ export async function fetchGenreForSong(song) {
 }
 
 export async function getFavorites(userId) {
-  const res = await axios.get(`${API_BASE}/favorites?userId=${userId}`);
-  return res.data;
+  try {
+    const res = await axios.get(`${API_BASE}/favorites`, {
+      params: { userId },
+    });
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.error || "Failed to fetch favorites");
+  }
 }
 
 export async function addFavorite(song, userId, genre) {
-  const res = await axios.post(`${API_BASE}/favorites`, {
-    ...song,
-    userId,
-    genre,
-    addedAt: new Date().toISOString(),
-  });
-  return res.data;
+  try {
+    const res = await axios.post(`${API_BASE}/favorites`, {
+      ...song,
+      userId,
+      genre,
+      addedAt: new Date().toISOString(),
+    });
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.error || "Failed to add favorite");
+  }
 }
 
 export async function removeFavorite(id) {
-  await axios.delete(`${API_BASE}/favorites/${id}`);
-  return id;
+  try {
+    await axios.delete(`${API_BASE}/favorites/${id}`);
+    return id;
+  } catch (err) {
+    throw new Error(err.response?.data?.error || "Failed to remove favorite");
+  }
 }

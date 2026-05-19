@@ -5,6 +5,7 @@ from models.playlist import Playlist
 from models.favorite import Favorite
 from models.message import Message
 
+
 def seed_data():
     db.drop_all()
     db.create_all()
@@ -16,7 +17,8 @@ def seed_data():
         password="Tunely@123",
         role="admin",
         suspended=False,
-        first_login=True
+        first_login=True,
+        approved=True
     )
     user1 = User(
         username="Joseph",
@@ -108,6 +110,7 @@ def seed_data():
     db.session.add_all([fav1, fav2, msg1, msg2])
     db.session.commit()
     print(" Database seeded successfully!")
+
 
 if __name__ == '__main__':
     app = create_app()

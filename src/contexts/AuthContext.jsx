@@ -15,7 +15,6 @@ export function AuthProvider({ children }) {
     }
   });
 
-  // Login — calls Flask auth endpoint
   const login = async (email, password) => {
     try {
       const res = await axios.post(`${API_BASE}/auth/login`, {
@@ -24,6 +23,14 @@ export function AuthProvider({ children }) {
       });
 
       const loggedInUser = res.data;
+
+      // ✅ Only block admins if not approved
+      if (loggedInUser.role === "admin" && !loggedInUser.approved) {
+        throw new Error(
+          "Your admin account is pending approval. Contact an existing admin.",
+        );
+      }
+
       setUser(loggedInUser);
       localStorage.setItem("tunely_user", JSON.stringify(loggedInUser));
       return loggedInUser;
@@ -32,19 +39,21 @@ export function AuthProvider({ children }) {
         throw new Error("Invalid email or password.");
       }
       if (err.response?.status === 403) {
-        throw new Error("Your account has been suspended.");
+        const message = err.response?.data?.error;
+        if (message === "Account is suspended") {
+          throw new Error("Your account has been suspended. Contact support.");
+        }
+        throw new Error(message || "Access denied.");
       }
       throw new Error("Cannot connect to server. Please try again.");
     }
   };
 
-  // Logout
   const logout = () => {
     setUser(null);
     localStorage.removeItem("tunely_user");
   };
 
-  // Role check
   const hasRole = (role) => user?.role === role;
 
   return (

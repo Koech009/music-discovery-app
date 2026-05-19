@@ -13,17 +13,16 @@ export default function useFavorites() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load only THIS user's favorites
   useEffect(() => {
     if (!user?.id) return;
     setLoading(true);
+    setError(null);
     getFavorites(user.id)
       .then((data) => setFavorites(data))
       .catch(() => setError("Could not load favorites."))
       .finally(() => setLoading(false));
   }, [user?.id]);
 
-  // Add favorite — fetches + saves genre automatically
   async function addFavorite(song) {
     if (!user?.id) return { notLoggedIn: true };
 
@@ -34,22 +33,25 @@ export default function useFavorites() {
     );
     if (alreadyExists) return { duplicate: true };
 
+    setError(null);
     try {
       const genre = await fetchGenreForSong(song);
       const newFav = await apiAddFavorite(song, user.id, genre);
       setFavorites((prev) => [...prev, newFav]);
     } catch {
       setError("Could not save favorite.");
+      throw error;
     }
   }
 
-  // Remove
   async function removeFavorite(id) {
+    setError(null);
     try {
       await apiRemoveFavorite(id);
       setFavorites((prev) => prev.filter((f) => f.id !== id));
     } catch {
       setError("Could not remove favorite.");
+      throw error;
     }
   }
 

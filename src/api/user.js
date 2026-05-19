@@ -68,3 +68,21 @@ export const changeUserPassword = async (id, newPassword) => {
   });
   return res.data;
 };
+
+// Admin: get all pending admins
+export const getPendingAdmins = async () => {
+  const res = await api.get("/admin/admins/pending");
+  return res.data;
+};
+
+// Admin: approve a pending admin
+export const approveAdmin = async (id) => {
+  const res = await api.patch(`/admin/admins/${id}/approve`);
+  return res.data;
+};
+
+// Admin: reject/remove a pending admin
+export const rejectAdmin = async (id) => {
+  const res = await api.delete(`/admin/admins/${id}/reject`);
+  return res.data;
+};
