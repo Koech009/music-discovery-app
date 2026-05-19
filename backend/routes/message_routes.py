@@ -3,12 +3,15 @@ from extensions import db
 from models.message import Message
 from schemas.message_schema import message_schema, messages_schema
 from marshmallow import ValidationError
+from routes.audit_routes import log_action
 
 message_bp = Blueprint("messages", __name__)
 
-# Get all messages (admin) — optionally filter by email
+# Temporary actor ID until JWT is implemented
+SYSTEM_ADMIN_ID = 1
 
 
+# GET all messages
 @message_bp.route("", methods=["GET"])
 def get_messages():
     email = request.args.get("email")
@@ -17,9 +20,8 @@ def get_messages():
         query = query.filter_by(email=email)
     return messages_schema.jsonify(query.all()), 200
 
-# Get a single message by ID
 
-
+# GET single message by ID
 @message_bp.route("/<int:id>", methods=["GET"])
 def get_message(id):
     msg = Message.query.get(id)
@@ -27,9 +29,8 @@ def get_message(id):
         return jsonify({"error": "Message not found"}), 404
     return message_schema.jsonify(msg), 200
 
-# Create a new message (Contact form)
 
-
+# POST create a new message (contact form)
 @message_bp.route("", methods=["POST"])
 def create_message():
     data = request.get_json()
@@ -42,7 +43,7 @@ def create_message():
     return message_schema.jsonify(new_msg), 201
 
 
-# Update a message ( mark as read)
+# PATCH mark message as read
 @message_bp.route("/<int:id>", methods=["PATCH"])
 def update_message(id):
     msg = Message.query.get(id)
@@ -54,16 +55,32 @@ def update_message(id):
         msg.is_read = data["is_read"]
 
     db.session.commit()
+
+    log_action(
+        user_id=SYSTEM_ADMIN_ID,
+        action="MARK_MESSAGE_READ",
+        target_type="Message",
+        target_id=msg.id,
+        details=f"Message from {msg.email} marked as {'read' if msg.is_read else 'unread'}"
+    )
     return message_schema.jsonify(msg), 200
 
-# Delete a message (admin only)
 
-
+# DELETE message
 @message_bp.route("/<int:id>", methods=["DELETE"])
 def delete_message(id):
     msg = Message.query.get(id)
     if not msg:
         return jsonify({"error": "Message not found"}), 404
+
     db.session.delete(msg)
     db.session.commit()
+
+    log_action(
+        user_id=SYSTEM_ADMIN_ID,
+        action="DELETE_MESSAGE",
+        target_type="Message",
+        target_id=id,
+        details=f"Deleted message from {msg.email}"
+    )
     return jsonify({"message": "Message deleted"}), 200
