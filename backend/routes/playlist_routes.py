@@ -40,15 +40,31 @@ def get_playlists():
     current_user_id = int(get_jwt_identity())
     claims = get_jwt()
 
-    # Admins can query any user's playlists via ?userId=
-    # Regular users always get their own
     if claims.get("role") == "admin":
         user_id = request.args.get("userId", type=int) or current_user_id
     else:
         user_id = current_user_id
 
-    playlists = Playlist.query.filter_by(user_id=user_id).all()
-    return jsonify({'playlists': playlists_schema.dump(playlists)}), 200
+    page = request.args.get("page", default=1, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+
+    pagination = Playlist.query.filter_by(user_id=user_id).paginate(
+        page=page,
+        per_page=limit,
+        error_out=False
+    )
+
+    return jsonify({
+        "metadata": {
+            "total_items": pagination.total,
+            "total_pages": pagination.pages,
+            "current_page": pagination.page,
+            "limit": pagination.per_page,
+            "has_next": pagination.has_next,
+            "has_prev": pagination.has_prev
+        },
+        "playlists": playlists_schema.dump(pagination.items)
+    }), 200
 
 
 # ── GET /api/playlists/<id> ───────────────────────────────────────────────────
@@ -82,7 +98,6 @@ def create_playlist():
     except ValidationError as err:
         return jsonify({'errors': err.messages}), 400
 
-    # Always assign playlist to the authenticated user
     new_playlist.user_id = current_user_id
 
     db.session.add(new_playlist)

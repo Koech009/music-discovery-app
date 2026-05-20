@@ -5,6 +5,7 @@ from models.message import Message
 from models.audit_log import AuditLog
 from schemas.message_schema import message_schema, messages_schema
 from marshmallow import ValidationError
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 message_bp = Blueprint("messages", __name__)
 
@@ -45,15 +46,70 @@ def get_messages():
 
     email = request.args.get("email")
     is_read = request.args.get("is_read")
+    page = request.args.get("page", default=1, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+    
+    @message_bp.route("", methods=["GET"])
+@jwt_required()
+def get_messages():
+    err = require_admin()
+    if err:
+        return err
 
+    email = request.args.get("email")
+    is_read = request.args.get("is_read")   
+    page = request.args.get("page", default=1, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+    
     query = Message.query
+    
     if email:
         query = query.filter_by(email=email)
     if is_read is not None:
         query = query.filter_by(is_read=is_read.lower() == "true")
+    
+    
+    pagination = query.order_by(Message.created_at.desc()).paginate(
+        page=page, 
+        per_page=limit, 
+        error_out=False
+    )
+    
+    return jsonify({
+       
+        'metadata': {
+            'total_items': pagination.total,
+            'total_pages': pagination.pages,
+            'current_page': pagination.page,
+            'limit': pagination.per_page,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        },
+        'messages': messages_schema.dump(pagination.items)
+    }), 200
 
-    messages = query.order_by(Message.created_at.desc()).all()
-    return jsonify({"messages": messages_schema.dump(messages)}), 200
+
+    
+    
+    pagination = query.order_by(Message.created_at.desc()).paginate(
+        page=page, 
+        per_page=limit, 
+        error_out=False
+    )
+    
+    return jsonify({
+        'success': True,
+        'metadata': {
+            'total_items': pagination.total,
+            'total_pages': pagination.pages,
+            'current_page': pagination.page,
+            'limit': pagination.per_page,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        },
+        'messages': messages_schema.dump(pagination.items)
+    }), 200
+
 
 
 # ── GET /api/messages/<id> ────────────────────────────────────────────────────

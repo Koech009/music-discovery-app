@@ -5,6 +5,7 @@ from models.favorite import Favorite
 from models.audit_log import AuditLog
 from schemas.favorite_schema import favorite_schema, favorites_schema
 from marshmallow import ValidationError
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 favorite_bp = Blueprint("favorites", __name__)
 
@@ -32,9 +33,28 @@ def get_user_favorites():
     else:
         user_id = current_user_id
 
-    favorites = Favorite.query.filter_by(user_id=user_id).all()
-    return jsonify({"favorites": favorites_schema.dump(favorites)}), 200
-
+   
+    page = request.args.get("page", default=1, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+ 
+    pagination = Favorite.query.filter_by(user_id=user_id).paginate(
+        page=page, 
+        per_page=limit, 
+        error_out=False
+    )
+    
+    return jsonify({
+        'success': True,
+        'metadata': {
+            'total_items': pagination.total,
+            'total_pages': pagination.pages,
+            'current_page': pagination.page,
+            'limit': pagination.per_page,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        },
+        'favorites': favorites_schema.dump(pagination.items)
+    }), 200
 
 # ── POST /api/favorites ───────────────────────────────────────────────────────
 
