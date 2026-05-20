@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { loginUser } from "../../api/user";
 import "../../styles/auth.css";
 
 function Login() {
@@ -63,13 +64,18 @@ function Login() {
     setLoading(true);
 
     try {
-      const user = await login(formData.email, formData.password);
+      // 1. Call the API
+      const data = await loginUser(formData.email, formData.password);
+
+      // 2. Store user + tokens in context and localStorage
+      login(data.user, data.access_token, data.refresh_token);
+
       setSuccessMessage("Login successful! Redirecting...");
       setTimeout(() => {
-        navigate(user.role === "admin" ? "/admin/overview" : "/dashboard");
+        navigate(data.user.role === "admin" ? "/admin/overview" : "/dashboard");
       }, 1000);
     } catch (err) {
-      setSubmitError(err.message);
+      setSubmitError(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }

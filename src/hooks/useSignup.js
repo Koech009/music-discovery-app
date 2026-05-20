@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { createUser, getUsers } from "../api/user.js";
+import { signupUser } from "../api/user.js";
+import { useAuth } from "../contexts/AuthContext.jsx";
 
 export function useSignup() {
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -23,44 +25,26 @@ export function useSignup() {
         throw new Error("Password must be at least 8 characters.");
       }
 
-      // Fetch existing users
-      const existingUsers = await getUsers();
-
-      if (
-        existingUsers.some(
-          (u) =>
-            u.username &&
-            u.username.toLowerCase() === formData.username.toLowerCase(),
-        )
-      ) {
-        throw new Error("Username is already taken.");
-      }
-
-      if (
-        existingUsers.some(
-          (u) =>
-            u.email && u.email.toLowerCase() === formData.email.toLowerCase(),
-        )
-      ) {
-        throw new Error("Email is already registered.");
-      }
-
-      // Payload with createdAt + status
       const payload = {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        role: formData.role, // admin or user
-        createdAt: new Date().toISOString(),
-        status: "active",
+        role: formData.role || "user",
       };
 
-      const newUser = await createUser(payload);
+      const data = await signupUser(payload);
 
+      if (payload.role === "admin") {
+        setSuccess("Admin account created and pending approval.");
+        return null;
+      }
+
+      // Regular users get tokens immediately
+      login(data.user, data.access_token, data.refresh_token);
       setSuccess("Signup successful!");
-      return newUser;
+      return data.user;
     } catch (err) {
-      setError(err.message || "Signup failed.");
+      setError(err.response?.data?.error || err.message || "Signup failed.");
       return null;
     } finally {
       setLoading(false);

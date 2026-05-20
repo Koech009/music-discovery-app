@@ -18,12 +18,12 @@ class FavoriteSchema(ma.SQLAlchemyAutoSchema):
     id = ma.auto_field(dump_only=True)
     added_at = ma.auto_field(dump_only=True)
 
+    # user_id set by backend from JWT — not required on input
+    user_id = fields.Integer(load_default=None, data_key='userId')
+
     # Required fields
-    user_id = fields.Integer(required=True, data_key='userId')
-    title = fields.String(
-        required=True, validate=validate.Length(min=1, max=255))
-    artist_name = fields.String(
-        required=True, validate=validate.Length(min=1, max=255))
+    title = fields.String(required=True, validate=validate.Length(min=1, max=255))
+    artist_name = fields.String(required=True, validate=validate.Length(min=1, max=255))
 
     # Optional fields
     album_title = fields.String(validate=validate.Length(max=255))
@@ -62,7 +62,7 @@ class FavoriteSchema(ma.SQLAlchemyAutoSchema):
 
     @validates('user_id')
     def validate_user_id(self, value):
-        if value <= 0:
+        if value is not None and value <= 0:
             raise ValidationError("Invalid user ID.")
 
     @validates('preview_url')
@@ -76,6 +76,5 @@ class FavoriteSchema(ma.SQLAlchemyAutoSchema):
             raise ValidationError("Album cover must be a valid URL.")
 
 
-# Instances
 favorite_schema = FavoriteSchema()
 favorites_schema = FavoriteSchema(many=True)

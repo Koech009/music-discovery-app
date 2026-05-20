@@ -1,29 +1,38 @@
-import axios from "axios";
+import api from "../utils/api";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-const API_BASE = `${baseURL}/api`;
+const API_BASE = "/messages";
 
+// Get all messages (admin only)
 export const getMessages = async () => {
-  return axios.get(`${API_BASE}/messages`);
+  const res = await api.get(`${API_BASE}`);
+  return res.data.messages ?? [];
 };
 
+// Add a new message (public contact form)
 export const addMessage = async (message) => {
   const payload = {
     ...message,
     createdAt: new Date().toISOString(),
     isRead: false,
   };
-  return axios.post(`${API_BASE}/messages`, payload);
+  const res = await api.post(`${API_BASE}`, payload);
+  return res.data.message ?? res.data;
 };
 
+// Update a message (admin only)
 export const updateMessage = async (id, updates) => {
-  return axios.patch(`${API_BASE}/messages/${id}`, updates);
+  const res = await api.patch(`${API_BASE}/${id}`, updates);
+  return res.data;
 };
 
+// Delete a message (admin only)
 export const deleteMessage = async (id) => {
-  return axios.delete(`${API_BASE}/messages/${id}`);
+  const res = await api.delete(`${API_BASE}/${id}`);
+  return res.data;
 };
 
+// Mark a message as read (admin only)
 export const markAsRead = async (id) => {
-  return axios.patch(`${API_BASE}/messages/${id}`, { is_read: true });
+  const res = await api.patch(`${API_BASE}/${id}`, { is_read: true });
+  return res.data;
 };

@@ -34,3 +34,13 @@ export const getArtist = async (id) => {
     return null;
   }
 };
+
+export const getAlbum = async (id) => {
+  try {
+    const res = await axios.get(`${BASE_URL}/album/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("Album fetch error:", err);
+    return null;
+  }
+};

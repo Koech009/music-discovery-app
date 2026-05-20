@@ -5,7 +5,6 @@ from models.playlist import Playlist
 
 ma = Marshmallow()
 
-
 class PlaylistSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Playlist
@@ -16,8 +15,7 @@ class PlaylistSchema(ma.SQLAlchemyAutoSchema):
 
     id = ma.auto_field(dump_only=True)
     created_at = ma.auto_field(dump_only=True)
-
-    user_id = fields.Int(required=True, data_key="userId")
+    user_id = fields.Int(dump_only=True)
     name = fields.String(
         required=True, validate=validate.Length(min=1, max=120))
     description = fields.String(
@@ -36,12 +34,5 @@ class PlaylistSchema(ma.SQLAlchemyAutoSchema):
         if not value.strip():
             raise ValidationError("Playlist name cannot be empty.")
 
-    @validates("user_id")
-    def validate_user_id(self, value):
-        if value <= 0:
-            raise ValidationError("Invalid user ID.")
-
-
-# Instances
 playlist_schema = PlaylistSchema()
 playlists_schema = PlaylistSchema(many=True)
