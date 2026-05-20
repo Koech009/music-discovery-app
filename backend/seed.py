@@ -14,42 +14,48 @@ def seed_data():
     admin = User(
         username="TunelyAdmin",
         email="tunelyadmin@tunely.com",
-        password="Tunely@123",
         role="admin",
         suspended=False,
         first_login=True,
-        approved=True
+        approved=True,
+        password_hash="Tunely@123"
     )
+
     user1 = User(
         username="Joseph",
         email="jose@tunely.com",
-        password="Jose@123",
         role="user",
         suspended=False,
         bio="Kenyan music lover",
         address="46 ELDORET",
-        phone="0749158455"
+        phone="0749158455",
+        approved=True,
+        password_hash="Jose@123"
     )
+
     user2 = User(
         username="terrence",
         email="terr@tunely.com",
-        password="Terr@123",
         role="user",
-        suspended=False
+        suspended=False,
+        approved=True,
+        password_hash="Terr@123"
     )
+
     user3 = User(
         username="Admin04",
         email="admin4@tunely.com",
-        password="Koech@123",
         role="admin",
         suspended=False,
         bio="rnb lover",
-        address="4606 ELDORET",
-        phone="0742158335"
+        address="46 ELDORET",
+        phone="0741448335",
+        approved=True,
+        password_hash="Koech@123"
     )
 
     db.session.add_all([admin, user1, user2, user3])
-    db.session.flush()  # get IDs before commit
+    db.session.flush()
 
     # Playlists
     playlist1 = Playlist(
@@ -60,12 +66,12 @@ def seed_data():
     )
     playlist2 = Playlist(
         name="Kenyan songs",
-        description="kenyan songs that i love",
+        description="Kenyan songs that i love",
         user_id=admin.id,
         songs=[]
     )
     playlist3 = Playlist(
-        name="late night vibes",
+        name="Late night vibes",
         description="",
         user_id=user2.id,
         songs=[]
@@ -95,9 +101,11 @@ def seed_data():
         genre="Alternative"
     )
 
+    db.session.add_all([fav1, fav2])
+
     # Messages
     msg1 = Message(
-        name="ian koech",
+        name="Ian Koech",
         email="ian.kipchirchir1@student.moringaschool.com",
         content="hello"
     )
@@ -107,7 +115,7 @@ def seed_data():
         content="having trouble logging in"
     )
 
-    db.session.add_all([fav1, fav2, msg1, msg2])
+    db.session.add_all([msg1, msg2])
     db.session.commit()
     print(" Database seeded successfully!")
 
