@@ -1,20 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { getUsers } from "../../api/user";
 import "../../styles/dashboard.css";
-import axios from "axios";
-
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-const API_BASE = `${baseURL}/api`;
 
 export default function AdminOverview() {
-  const { user } = useAuth(); //  get user from context
+  const { user } = useAuth();
   const [stats, setStats] = useState({ users: 0, admins: 0 });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const users = (await axios.get(`${API_BASE}/users`)).data;
+        const users = await getUsers(); // ← uses api/user.js with JWT attached
         setStats({
           users: users.length,
           admins: users.filter((u) => u.role === "admin").length,
