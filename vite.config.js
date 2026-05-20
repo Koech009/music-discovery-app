@@ -4,8 +4,6 @@ import react from "@vitejs/plugin-react";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
   const backendUrl = env.VITE_API_BASE_URL || "http://localhost:5000";
-  const isDev = mode === "development";
-
   return {
     plugins: [react()],
     oxc: false,
@@ -15,7 +13,7 @@ export default defineConfig(({ mode }) => {
       setupFiles: "./src/tests/setup.js",
     },
     server: {
-      host: "localhost", 
+      host: "localhost",
       proxy: {
         "/api/auth": { target: backendUrl, changeOrigin: true },
         "/api/users": { target: backendUrl, changeOrigin: true },
@@ -40,14 +38,5 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-<<<<<<< HEAD
-  },
-});
-=======
   };
-<<<<<<< HEAD
 });
->>>>>>> c604434442535f8d6a756937f015191153723774
-=======
-});
->>>>>>> 9b55c87e61cc0d9ba1984210db213309c2833d98

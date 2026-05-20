@@ -8,13 +8,6 @@ import { usePlaylists } from "../hooks/usePlaylists";
 import "../styles/trending-genres.css";
 
 export default function Genres() {
-
-  // ─── STATE ───────────────────────────────────────────────────────────────
-  // genres    → the full list of genre buttons fetched from Deezer on page load
-  // selected  → the name of whichever genre button the user last clicked
-  // songs     → the list of songs returned for the selected genre
-  // loading   → true while waiting for an API response (shows a spinner)
-  // error     → holds an error message string if any API call fails
   const [genres, setGenres] = useState([]);
   const [selected, setSelected] = useState(null);
   const [songs, setSongs] = useState([]);
@@ -61,10 +54,6 @@ export default function Genres() {
     }
   };
 
-  // ─── FETCH GENRES ON MOUNT ───────────────────────────────────────────────
-  // useEffect with an empty [] runs once when the component first appears.
-  // It calls the Deezer genre endpoint and stores the list in `genres`.
-  // If the request fails, it sets an error message instead.
   useEffect(() => {
     axios
       .get("/api/deezer/genre")
@@ -72,13 +61,6 @@ export default function Genres() {
       .catch(() => setError("Could not load genres."));
   }, []);
 
-  // ─── HANDLE GENRE BUTTON CLICK ───────────────────────────────────────────
-  // Called whenever the user clicks one of the genre buttons.
-  // 1. Marks that genre as "selected" (so its button gets the active style).
-  // 2. Shows the spinner and clears any previous error.
-  // 3. Fetches the top chart songs for that genre ID from Deezer.
-  // 4. Stores the returned songs in state, or sets an error if it fails.
-  // 5. Always hides the spinner when done (the `finally` block).
   async function handleGenreClick(genreId, genreName) {
     setSelected(genreName);
     setLoading(true);
@@ -94,30 +76,18 @@ export default function Genres() {
     }
   }
 
-  // ─── RENDER ──────────────────────────────────────────────────────────────
   return (
     <div className="page-container">
-<<<<<<< HEAD
-
-      {/* Page title and subtitle */}
-=======
       {toast && <div className="toast">{toast}</div>}
 
->>>>>>> 7f09d01f60e8640f6734a827545997eda38bf4b9
       <div className="page-header">
         <h1 className="page-title">🎸 Genres</h1>
         <p className="page-subtitle">Browse music by genre.</p>
       </div>
 
-      {/* Show an error banner if any API call failed */}
       {error && <ErrorMessages message={error} />}
 
-<<<<<<< HEAD
-      {/* Row of genre buttons — one per genre returned by the API.
-          The clicked button gets the "active" CSS class so it looks highlighted. */}
-=======
       {/* Genre pills */}
->>>>>>> 7f09d01f60e8640f6734a827545997eda38bf4b9
       <div className="genre-buttons">
         {genres.map((g) => (
           <button
@@ -130,15 +100,9 @@ export default function Genres() {
         ))}
       </div>
 
-      {/* Spinner — only visible while a chart request is in flight */}
       {loading && <Loader />}
 
-<<<<<<< HEAD
-      {/* Song list — only rendered once we have songs to show.
-          Each card displays the song title and the artist name. */}
-=======
       {/* Songs list */}
->>>>>>> 7f09d01f60e8640f6734a827545997eda38bf4b9
       {songs.length > 0 && (
         <div className="trending-list" style={{ marginTop: "1.5rem" }}>
           {songs.map((song) => (
@@ -197,8 +161,6 @@ export default function Genres() {
         </div>
       )}
 
-<<<<<<< HEAD
-=======
       {/* Playlist picker modal */}
       {playlistSong && (
         <div className="modal-overlay" onClick={() => setPlaylistSong(null)}>
@@ -231,7 +193,6 @@ export default function Genres() {
           </div>
         </div>
       )}
->>>>>>> 7f09d01f60e8640f6734a827545997eda38bf4b9
     </div>
   );
 }
