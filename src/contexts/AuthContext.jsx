@@ -1,78 +1,56 @@
-import { createContext, useContext, useState } from "react";
-import axios from "axios";
+import { createContext, useContext, useState, useEffect } from "react";
+import api from "../utils/api";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-const API_BASE = `${baseURL}/api`;
-
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-const [user, setUser] = useState(() => {
-  try {
-    return JSON.parse(localStorage.getItem("tunely_user")) || null;
-  } catch {
-    return null;
-  }
-});
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-const [token, setToken] = useState(() => {
-  return localStorage.getItem("token") || null;
-});
-
-  const login = async (email, password) => {
-  try {
-    const res = await axios.post(`${API_BASE}/auth/login`, {
-      email,
-      password,
-    });
-    
-      const loggedInUser = res.data;
-
-      //  Only block admins if not approved
-      if (loggedInUser.role === "admin" && !loggedInUser.approved) {
-        throw new Error(
-          "Your admin account is pending approval. Contact an existing admin.",
-        );
-      }
-
-      setUser(loggedInUser);
-      localStorage.setItem("tunely_user", JSON.stringify(loggedInUser));
-      return loggedInUser;
-    } catch (err) {
-      if (err.response?.status === 401) {
-        throw new Error("Invalid email or password.");
-      }
-      if (err.response?.status === 403) {
-        const message = err.response?.data?.error;
-        if (message === "Account is suspended") {
-          throw new Error("Your account has been suspended. Contact support.");
-        }
-        throw new Error(message || "Access denied.");
-      }
-      throw new Error("Cannot connect to server. Please try again.");
-      
+  // Restore user from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) setUser(JSON.parse(storedUser));
+    } catch {
+      localStorage.clear();
+    } finally {
+      setLoading(false);
     }
-    if (err.response?.status === 403) {
-      throw new Error("Your account has been suspended.");
-    }
-    throw new Error("Cannot connect to server. Please try again.");
-  }
-};
+  }, []);
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("tunely_user");
-    localStorage.removeItem("token");
+  // Called after successful loginUser() / signupUser() API call
+  const login = (userData, accessToken, refreshToken) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("access_token", accessToken);
+    localStorage.setItem("refresh_token", refreshToken);
+    setUser(userData);
+  };
+
+  // Blocklist token server-side then clear locally
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // clear locally even if server call fails
+    } finally {
+      localStorage.clear();
+      setUser(null);
+    }
   };
 
   const hasRole = (role) => user?.role === role;
+  const isAdmin = () => user?.role === "admin";
 
   return (
-<AuthContext.Provider value={{ user, token, login, logout, hasRole }}>
-  {children}
-</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, logout, hasRole, isAdmin }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
+}
