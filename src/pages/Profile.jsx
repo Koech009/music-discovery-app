@@ -4,12 +4,12 @@ import { updateUser, changePassword } from "../api/user.js";
 import "../styles/auth.css";
 
 export default function Profile() {
-  const { user, login } = useAuth();
+  const { user, updateUserContext } = useAuth(); 
 
   const [form, setForm] = useState({
     username: user?.username || "",
     email: user?.email || "",
-    bio: user?.bio || "",           
+    bio: user?.bio || "",
     address: user?.address || "",
     phone: user?.phone || "",
   });
@@ -68,21 +68,20 @@ export default function Profile() {
       await updateUser(user.id, {
         username: form.username,
         email: form.email,
-        bio: form.bio,        
+        bio: form.bio,
         address: form.address,
         phone: form.phone,
       });
 
-      
-      const updated = {
+      updateUserContext({
         ...user,
         username: form.username,
         email: form.email,
         bio: form.bio,
         address: form.address,
         phone: form.phone,
-      };
-      login(updated, localStorage.getItem("access_token"), localStorage.getItem("refresh_token"));
+        first_login: false,
+      });
 
       setErrors({});
       showAlert("success", "Profile updated successfully!");
