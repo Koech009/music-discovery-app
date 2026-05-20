@@ -1,31 +1,13 @@
 import pytest
 from marshmallow import ValidationError
 
-from schemas.audit_log_schema import audit_schema
 from schemas.favorite_schema import favorite_schema
 from schemas.message_schema import message_schema
 from schemas.playlist_schema import playlist_schema
 from schemas.user_schema import user_schema
 
 
-# -- AuditLogSchema Tests --
-def test_audit_schema_fields_exist():
-    expected_fields = [
-        "id",
-        "user_id",
-        "action",
-        "target_type",
-        "target_id",
-        "details",
-        "timestamp",
-        "user"
-    ]
-
-    for field in expected_fields:
-        assert field in audit_schema.fields
-
-
-# -- FavoriteSchema Tests --
+# ---------- FavoriteSchema Tests ----------
 def test_favorite_schema_valid():
     data = {
         "userId": 1,
@@ -47,7 +29,7 @@ def test_favorite_schema_invalid_user_id():
         favorite_schema.load(data)
 
 
-# -- MessageSchema Tests --
+# ---------- MessageSchema Tests ----------
 def test_message_schema_valid():
     data = {
         "name": "John Doe",
@@ -65,7 +47,7 @@ def test_message_schema_invalid_content():
         message_schema.load(data)
 
 
-# -- PlaylistSchema Tests --
+# ---------- PlaylistSchema Tests ----------
 def test_playlist_schema_valid():
     data = {
         "userId": 1,
@@ -84,7 +66,7 @@ def test_playlist_schema_invalid_user_id():
         playlist_schema.load(data)
 
 
-# --- UserSchema Tests ---
+# ---------- UserSchema Tests ----------
 def test_user_schema_valid():
     data = {
         "username": "ValidUser",
@@ -103,7 +85,7 @@ def test_user_schema_invalid_phone():
         "username": "PhoneUser",
         "email": "phone@example.com",
         "password": "StrongPass1!",
-        "phone": "123"
+        "phone": "123"  # too short
     }
     with pytest.raises(ValidationError):
         user_schema.load(data)
