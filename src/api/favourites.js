@@ -1,15 +1,15 @@
-import axios from "axios";
+import api from "../utils/api";
+import { getAlbum } from "./deezer";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-const API_BASE = `${baseURL}/api`;
+const API_BASE = "/favorites";
 
-// Fetch genre name for a song via Deezer album endpoint
+// Fetch genre name for a song via Vite proxy → Deezer
 export async function fetchGenreForSong(song) {
   try {
     const albumId = song.album?.id;
     if (!albumId) return "Unknown";
-    const res = await axios.get(`/api/deezer/album/${albumId}`);
-    const genres = res.data?.genres?.data;
+    const data = await getAlbum(albumId);
+    const genres = data?.genres?.data;
     if (genres && genres.length > 0) return genres[0].name;
     return "Unknown";
   } catch {
@@ -17,10 +17,11 @@ export async function fetchGenreForSong(song) {
   }
 }
 
+// Get favorites
 export async function getFavorites(userId) {
   try {
-    const res = await axios.get(`${API_BASE}/favorites`, {
-      params: { userId },
+    const res = await api.get(API_BASE, {
+      params: userId ? { userId } : {},
     });
     return res.data;
   } catch (err) {
@@ -28,23 +29,30 @@ export async function getFavorites(userId) {
   }
 }
 
+// Add a favorite
 export async function addFavorite(song, userId, genre) {
   try {
-    const res = await axios.post(`${API_BASE}/favorites`, {
-      ...song,
+    const payload = {
+      title: song.title,
+      artist_name: song.artist?.name || song.artist_name || "Unknown",
+      album_title: song.album?.title || song.album_title || "",
+      album_cover: song.album?.cover_small || song.album_cover || "",
+      preview_url: song.preview || song.preview_url || "",
+      isrc: song.isrc || "",
+      genre: genre || "Unknown",
       userId,
-      genre,
-      addedAt: new Date().toISOString(),
-    });
+    };
+    const res = await api.post(API_BASE, payload);
     return res.data;
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to add favorite");
   }
 }
 
+// Remove a favorite
 export async function removeFavorite(id) {
   try {
-    await axios.delete(`${API_BASE}/favorites/${id}`);
+    await api.delete(`${API_BASE}/${id}`);
     return id;
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to remove favorite");
