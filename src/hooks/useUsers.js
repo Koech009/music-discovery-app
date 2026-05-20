@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   getUsers,
   getPendingAdmins,
@@ -10,11 +10,16 @@ import {
   rejectAdmin as apiRejectAdmin,
 } from "../api/user.js";
 
+const PER_PAGE = 10;
+
 export function useUsers() {
   const [users, setUsers] = useState([]);
   const [pendingAdmins, setPendingAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Pending admins pagination
+  const [pendingPage, setPendingPage] = useState(1);
 
   useEffect(() => {
     fetchUsers();
@@ -45,7 +50,7 @@ export function useUsers() {
 
   const deleteUser = async (id) => {
     try {
-      await deleteUserAdmin(id); // ← admin delete endpoint
+      await deleteUserAdmin(id);
       setUsers((prev) => prev.filter((u) => u.id !== id));
     } catch {
       setError("Failed to delete user.");
@@ -54,7 +59,7 @@ export function useUsers() {
 
   const changeRole = async (id, newRole) => {
     try {
-      await updateUser(id, { role: newRole }); // ← removed actorId, JWT handles it
+      await updateUser(id, { role: newRole });
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, role: newRole } : u))
       );
@@ -79,7 +84,7 @@ export function useUsers() {
 
   const suspendUser = async (id) => {
     try {
-      await toggleSuspendUser(id); // ← backend toggles, no need to track currentStatus
+      await toggleSuspendUser(id);
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, suspended: !u.suspended } : u))
       );
@@ -110,9 +115,32 @@ export function useUsers() {
     }
   };
 
+  // Pending admins pagination 
+
+  const pendingTotalPages = Math.max(1, Math.ceil(pendingAdmins.length / PER_PAGE));
+
+  const paginatedPendingAdmins = useMemo(
+    () => pendingAdmins.slice((pendingPage - 1) * PER_PAGE, pendingPage * PER_PAGE),
+    [pendingAdmins, pendingPage]
+  );
+
+  const pendingMetadata = {
+    current_page: pendingPage,
+    total_pages: pendingTotalPages,
+    has_prev: pendingPage > 1,
+    has_next: pendingPage < pendingTotalPages,
+    total: pendingAdmins.length,
+  };
+
+  const goToPendingPage = (p) => {
+    if (p >= 1 && p <= pendingTotalPages) setPendingPage(p);
+  };
+
   return {
     users,
-    pendingAdmins,
+    pendingAdmins: paginatedPendingAdmins,
+    pendingMetadata,
+    perPage: PER_PAGE,
     loading,
     error,
     fetchUsers,
@@ -123,5 +151,6 @@ export function useUsers() {
     suspendUser,
     approveAdmin,
     rejectAdmin,
+    goToPendingPage,
   };
 }

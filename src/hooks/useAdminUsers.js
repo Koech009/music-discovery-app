@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   getUsers,
   getUserById,
@@ -8,11 +8,15 @@ import {
   toggleSuspendUser,
 } from "../api/user.js";
 
+const PER_PAGE = 10;
+
 export function useAdminUsers() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
 
   const loadUsers = async () => {
     try {
@@ -54,13 +58,12 @@ export function useAdminUsers() {
 
   const updateUserField = async (id, updates) => {
     try {
-      await updateUser(id, updates); // actorId removed — JWT handles it
+      await updateUser(id, updates);
       await refreshUser(id);
     } catch {
       setError("Failed to update user.");
     }
   };
-
 
   const changePassword = async (id, newPassword) => {
     try {
@@ -68,7 +71,6 @@ export function useAdminUsers() {
       if (selectedUser?.id === id) await loadUserDetails(id);
     } catch (err) {
       const msg = err?.response?.data?.error || err?.message || "Unknown error";
-      console.error("changePassword error:", msg, err?.response);
       setError(msg);
       throw err;
     }
@@ -76,7 +78,7 @@ export function useAdminUsers() {
 
   const toggleSuspend = async (id) => {
     try {
-      await toggleSuspendUser(id); // backend toggles — no currentStatus needed
+      await toggleSuspendUser(id);
       await refreshUser(id);
     } catch {
       setError("Failed to update suspension status.");
@@ -85,7 +87,7 @@ export function useAdminUsers() {
 
   const deleteUser = async (id) => {
     try {
-      await deleteUserAdmin(id); // uses admin delete endpoint
+      await deleteUserAdmin(id);
       await loadUsers();
       if (selectedUser?.id === id) setSelectedUser(null);
     } catch {
@@ -93,11 +95,51 @@ export function useAdminUsers() {
     }
   };
 
+  //  Pagination 
+
+  // Filter first, then paginate
+  const filtered = useMemo(
+    () =>
+      users.filter((u) =>
+        u.username?.toLowerCase().includes(search.toLowerCase())
+      ),
+    [users, search]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE),
+    [filtered, page]
+  );
+
+  const metadata = {
+    current_page: page,
+    total_pages: totalPages,
+    has_prev: page > 1,
+    has_next: page < totalPages,
+    total: filtered.length,
+  };
+
+  const goToPage = (p) => {
+    if (p >= 1 && p <= totalPages) setPage(p);
+  };
+
+  // Reset to page 1 when search changes
+  const handleSearch = (val) => {
+    setSearch(val);
+    setPage(1);
+  };
+
   return {
-    users,
+    users: paginated,      
+    allUsers: users,       
     selectedUser,
     loading,
     error,
+    search,
+    metadata,
+    perPage: PER_PAGE,
     loadUsers,
     loadUserDetails,
     updateUserField,
@@ -105,5 +147,7 @@ export function useAdminUsers() {
     toggleSuspend,
     deleteUser,
     setSelectedUser,
+    goToPage,
+    handleSearch,
   };
 }

@@ -15,8 +15,8 @@ export function usePlaylists() {
     }
     (async () => {
       try {
-        const data = await playlistAPI.getPlaylists(); // ← removed user.id, JWT handles it
-        setPlaylists(data.playlists ?? data);          // ← unwrap { playlists: [...] }
+        const data = await playlistAPI.getPlaylists(); 
+        setPlaylists(data.playlists ?? data);          
       } catch (err) {
         console.error("Failed to fetch playlists:", err);
         setPlaylists([]);
@@ -79,7 +79,7 @@ export function usePlaylists() {
   const renamePlaylist = async (playlistId, newName) => {
     try {
       const updated = await playlistAPI.renamePlaylist(playlistId, newName);
-      updateLocal(playlistId, updated.playlist ?? updated); // ← unwrap response
+      updateLocal(playlistId, updated.playlist ?? updated); 
     } catch (err) {
       console.error("Failed to rename playlist:", err);
       throw err;
@@ -89,7 +89,7 @@ export function usePlaylists() {
   const updatePlaylistDescription = async (playlistId, newDescription) => {
     try {
       const updated = await playlistAPI.updatePlaylistDescription(playlistId, newDescription);
-      updateLocal(playlistId, updated.playlist ?? updated); // ← unwrap response
+      updateLocal(playlistId, updated.playlist ?? updated); 
     } catch (err) {
       console.error("Failed to update description:", err);
       throw err;
