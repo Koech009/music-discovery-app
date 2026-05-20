@@ -1,12 +1,21 @@
 import "../../styles/adminUsers.css";
 import useAuditLogs from "../../hooks/useAuditLogs";
+import Pagination from "../../components/Pagination";
 
 export default function AdminAuditLogs() {
   const { logs, loading, error, page, totalPages, total, perPage, goToPage } =
     useAuditLogs();
 
-  if (loading) return <p>Loading audit logs...</p>;
-  if (error) return <p className="error">{error}</p>;
+  if (loading) return <p style={{ padding: "28px", color: "#aaa" }}>Loading audit logs...</p>;
+  if (error) return <p className="error" style={{ padding: "28px" }}>{error}</p>;
+
+  const metadata = {
+    current_page: page,
+    total_pages: totalPages,
+    has_prev: page > 1,
+    has_next: page < totalPages,
+    total,
+  };
 
   return (
     <div className="admin-users-page">
@@ -33,7 +42,6 @@ export default function AdminAuditLogs() {
             <tbody>
               {logs.map((log) => (
                 <tr key={log.id}>
-                  {/* <td>{new Date(log.timestamp).toLocaleString()}</td> */}
                   <td>{new Date(log.timestamp + "Z").toLocaleString()}</td>
                   <td>{log.user?.username || `User #${log.user_id}`}</td>
                   <td>
@@ -50,50 +58,7 @@ export default function AdminAuditLogs() {
             </tbody>
           </table>
 
-          {/* Pagination controls */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "1rem",
-              marginTop: "1.5rem",
-            }}
-          >
-            <button
-              className="delete-btn"
-              onClick={() => goToPage(page - 1)}
-              disabled={page === 1}
-              style={{ opacity: page === 1 ? 0.4 : 1 }}
-            >
-              ← Prev
-            </button>
-
-            <span style={{ color: "#aaa", fontSize: "0.875rem" }}>
-              Page {page} of {totalPages}
-            </span>
-
-            <button
-              className="btn-unsuspend"
-              onClick={() => goToPage(page + 1)}
-              disabled={page === totalPages}
-              style={{ opacity: page === totalPages ? 0.4 : 1 }}
-            >
-              Next →
-            </button>
-          </div>
-
-          <p
-            style={{
-              textAlign: "center",
-              color: "#6a5a5a",
-              fontSize: "0.78rem",
-              marginTop: "0.5rem",
-            }}
-          >
-            Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, total)}{" "}
-            of {total} logs
-          </p>
+          <Pagination metadata={metadata} onPageChange={goToPage} perPage={perPage} />
         </>
       )}
     </div>

@@ -18,8 +18,8 @@ function UserDetailsPage() {
       try {
         const [userData, favsData, playlistsData] = await Promise.all([
           getUserById(id),
-          getFavorites(id),   // ← admin passing userId to see another user's favorites
-          getPlaylists(id),   // ← admin passing userId to see another user's playlists
+          getFavorites(id),   
+          getPlaylists(id),   
         ]);
         setUser(userData);
         setFavourites(favsData.favorites ?? favsData);

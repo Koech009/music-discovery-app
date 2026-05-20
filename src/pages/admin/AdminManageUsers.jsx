@@ -1,31 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminUsers } from "../../hooks/useAdminUsers";
 import ChangePasswordModal from "./ChangePasswordModal";
+import Pagination from "../../components/Pagination";
+import { useState } from "react";
 import "../../styles/adminUsers.css";
 
 function AdminManageUsers() {
   const {
     users,
+    loading,
+    error,
+    search,
+    metadata,
+    perPage,
     loadUsers,
     updateUserField,
     deleteUser,
     toggleSuspend,
     changePassword,
+    goToPage,
+    handleSearch,
   } = useAdminUsers();
 
-  const navigate = useNavigate(); //routing hook to navigate to user details page
-  const [search, setSearch] = useState(""); //track search input for filtering users by username
-  const [passwordUser, setPasswordUser] = useState(null); //track which user's password is being changed to show the modal
+  const navigate = useNavigate();
+  const [passwordUser, setPasswordUser] = useState(null);
 
   useEffect(() => {
     loadUsers();
-  }, []); //load all users when the component mounts
-  //filter users based on search input, matching username case-insensitively
-  const filtered = users.filter((u) =>
-    u.username?.toLowerCase().includes(search.toLowerCase()),
-  );
-  //rendered ui
+  }, []);
+
+  if (loading) return <p style={{ padding: "28px", color: "#aaa" }}>Loading users...</p>;
+  if (error) return <p className="error" style={{ padding: "28px" }}>{error}</p>;
+
   return (
     <div className="admin-users-page">
       <h1>User Management</h1>
@@ -36,7 +43,7 @@ function AdminManageUsers() {
         placeholder="Search users..."
         className="admin-search"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => handleSearch(e.target.value)}
       />
 
       <table className="admin-users-table">
@@ -49,20 +56,18 @@ function AdminManageUsers() {
             <th>Actions</th>
           </tr>
         </thead>
-
         <tbody>
-          {filtered.length === 0 ? (
+          {users.length === 0 ? (
             <tr>
               <td colSpan="5" className="empty-state">
                 No users found.
               </td>
             </tr>
           ) : (
-            filtered.map((u) => (
+            users.map((u) => (
               <tr key={u.id}>
                 <td>{u.username}</td>
                 <td>{u.email}</td>
-
                 <td>
                   <select
                     value={u.role}
@@ -74,38 +79,30 @@ function AdminManageUsers() {
                     <option value="admin">Admin</option>
                   </select>
                 </td>
-
                 <td>
-                  <span
-                    className={`badge ${u.suspended ? "suspended" : "active"}`}
-                  >
+                  <span className={`badge ${u.suspended ? "suspended" : "active"}`}>
                     {u.suspended ? "Suspended" : "Active"}
                   </span>
                 </td>
-
                 <td className="actions">
-                  {/* Navigate to full page instead of modal */}
                   <button
                     className="btn-view"
                     onClick={() => navigate(`/admin/users/${u.id}`)}
                   >
                     View
                   </button>
-
                   <button
                     className="btn-password"
                     onClick={() => setPasswordUser(u)}
                   >
-                    Change Password
+                    Password
                   </button>
-
                   <button
                     className={u.suspended ? "btn-unsuspend" : "btn-suspend"}
-                    onClick={() => toggleSuspend(u.id, u.suspended)}
+                    onClick={() => toggleSuspend(u.id)}
                   >
                     {u.suspended ? "Unsuspend" : "Suspend"}
                   </button>
-
                   <button
                     className="delete-btn"
                     onClick={() => deleteUser(u.id)}
@@ -118,6 +115,8 @@ function AdminManageUsers() {
           )}
         </tbody>
       </table>
+
+      <Pagination metadata={metadata} onPageChange={goToPage} perPage={perPage} />
 
       {passwordUser && (
         <ChangePasswordModal
