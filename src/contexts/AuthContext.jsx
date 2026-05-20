@@ -39,11 +39,19 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Add this function before hasRole
+const updateUserContext = (updatedUser) => {
+  setUser(updatedUser);
+  localStorage.setItem("user", JSON.stringify(updatedUser));
+};
+
+
   const hasRole = (role) => user?.role === role;
   const isAdmin = () => user?.role === "admin";
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasRole, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUserContext, hasRole, isAdmin }}>
+
       {children}
     </AuthContext.Provider>
   );
