@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getUserById, toggleSuspendUser, deleteUser } from "../../api/user";
-import axios from "axios";
+import { getUserById, toggleSuspendUser, deleteUserAdmin } from "../../api/user";
+import { getFavorites } from "../../api/favourites";
+import { getPlaylists } from "../../api/playlists";
 import "../../styles/adminUsers.css";
-
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-const api = axios.create({ baseURL: `${baseURL}/api` });
 
 function UserDetailsPage() {
   const { id } = useParams();
@@ -20,12 +18,12 @@ function UserDetailsPage() {
       try {
         const [userData, favsData, playlistsData] = await Promise.all([
           getUserById(id),
-          api.get(`/favorites?userId=${id}`).then((r) => r.data),
-          api.get(`/playlists?userId=${id}`).then((r) => r.data),
+          getFavorites(id),   // ← admin passing userId to see another user's favorites
+          getPlaylists(id),   // ← admin passing userId to see another user's playlists
         ]);
         setUser(userData);
-        setFavourites(favsData);
-        setPlaylists(playlistsData);
+        setFavourites(favsData.favorites ?? favsData);
+        setPlaylists(playlistsData.playlists ?? playlistsData);
       } catch (err) {
         console.error(err);
       } finally {
@@ -48,23 +46,13 @@ function UserDetailsPage() {
 
   const handleDelete = async () => {
     if (window.confirm("Delete this user?")) {
-      await deleteUser(user.id);
+      await deleteUserAdmin(user.id); // ← admin delete endpoint
       navigate("/admin/users");
     }
   };
 
-  if (loading)
-    return (
-      <div className="admin-users-page">
-        <p>Loading...</p>
-      </div>
-    );
-  if (!user)
-    return (
-      <div className="admin-users-page">
-        <p>User not found.</p>
-      </div>
-    );
+  if (loading) return <div className="admin-users-page"><p>Loading...</p></div>;
+  if (!user) return <div className="admin-users-page"><p>User not found.</p></div>;
 
   const isSuspended = user.suspended === true;
 
@@ -77,51 +65,45 @@ function UserDetailsPage() {
       <h1>User Details</h1>
 
       <div className="details-grid">
-        {/* Basic Info */}
         <div className="detail-card">
           <h3>Basic Info</h3>
-          <p>
-            <strong>Username:</strong> {user.username || "N/A"}
-          </p>
-          <p>
-            <strong>Email:</strong> {user.email || "N/A"}
-          </p>
-          <p>
-            <strong>Phone:</strong> {user.phone || "N/A"}
-          </p>
-          <p>
-            <strong>Address:</strong> {user.address || "N/A"}
-          </p>
-          <p>
-            <strong>Role:</strong> {user.role || "N/A"}
-          </p>
+          <p><strong>Username:</strong> {user.username || "N/A"}</p>
+          <p><strong>Email:</strong> {user.email || "N/A"}</p>
+          <p><strong>Phone:</strong> {user.phone || "N/A"}</p>
+          <p><strong>Address:</strong> {user.address || "N/A"}</p>
+          <p><strong>Role:</strong> {user.role || "N/A"}</p>
           <p>
             <strong>Status:</strong>{" "}
             <span className={`badge ${isSuspended ? "suspended" : "active"}`}>
               {isSuspended ? "Suspended" : "Active"}
             </span>
           </p>
-          <p>
-            <strong>Created:</strong> {formatDate(user.created_at)}
-          </p>
-          <p>
-            <strong>Last Login:</strong> {formatDate(user.last_login)}
-          </p>
+          <p><strong>Created:</strong> {formatDate(user.created_at)}</p>
+          <p><strong>Last Login:</strong> {formatDate(user.last_login)}</p>
+
+          <div className="actions" style={{ marginTop: "1rem" }}>
+            <button
+              className={isSuspended ? "btn-unsuspend" : "btn-suspend"}
+              onClick={handleSuspend}
+            >
+              {isSuspended ? "Unsuspend" : "Suspend"}
+            </button>
+            <button className="delete-btn" onClick={handleDelete}>
+              Delete User
+            </button>
+          </div>
         </div>
 
-        {/* Profile */}
         <div className="detail-card">
           <h3>Profile</h3>
-          <p>
-            <strong>Bio:</strong> {user.profile?.bio || "No bio"}
-          </p>
+          <p><strong>Bio:</strong> {user.bio || "No bio"}</p>
 
           <h4>Favourites ({favourites.length})</h4>
           {favourites.length > 0 ? (
             <ul>
               {favourites.map((fav) => (
                 <li key={fav.id}>
-                  🎵 {fav.title} — {fav.artist?.name}
+                  🎵 {fav.title} — {fav.artist_name || fav.artist?.name}
                 </li>
               ))}
             </ul>

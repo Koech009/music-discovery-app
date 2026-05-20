@@ -1,140 +1,195 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from extensions import db
 from models.user import User
-from schemas.user_schema import user_schema, users_schema
+from models.audit_log import AuditLog
 from marshmallow import ValidationError
-from datetime import datetime
+from schemas.user_schema import user_schema, users_schema
 
 user_bp = Blueprint('users', __name__)
 
-# GET all users
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def log_audit(actor_id, action, target_id, details):
+    entry = AuditLog(
+        user_id=actor_id,
+        action=action,
+        target_type="User",
+        target_id=target_id,
+        details=details
+    )
+    db.session.add(entry)
+
+
+def is_admin(claims):
+    return claims.get("role") == "admin"
+
+
+def get_user_or_404(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return None, jsonify({'error': 'User not found'}), 404
+    return user, None, None
+
+
+# ── GET /api/users ────────────────────────────────────────────────────────────
 
 @user_bp.route('', methods=['GET'])
+@jwt_required()
 def get_users():
+    claims = get_jwt()
+    if not is_admin(claims):
+        return jsonify({'error': 'Admin access required'}), 403
+
     users = User.query.all()
-    return users_schema.jsonify(users), 200
+    return jsonify({'users': users_schema.dump(users)}), 200
 
-# GET single user by id
 
+# ── GET /api/users/<id> ───────────────────────────────────────────────────────
 
 @user_bp.route('/<int:user_id>', methods=['GET'])
+@jwt_required()
 def get_user(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-    return user_schema.jsonify(user), 200
+    current_user_id = int(get_jwt_identity())
+    claims = get_jwt()
 
-# POST create new user
+    # Users can only fetch their own profile; admins can fetch anyone
+    if current_user_id != user_id and not is_admin(claims):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    user, err, code = get_user_or_404(user_id)
+    if err:
+        return err, code
+
+    return jsonify({'user': user.to_dict(include_profile=True)}), 200
 
 
-@user_bp.route('', methods=['POST'])
-def create_user():
-    data = request.get_json()
-    try:
-        new_user = user_schema.load(data)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
-
-    new_user.password = data.get('password')
-
-    if User.query.filter_by(email=new_user.email).first():
-        return jsonify({'error': 'Email already exists'}), 409
-    if User.query.filter_by(username=new_user.username).first():
-        return jsonify({'error': 'Username already taken'}), 409
-
-    db.session.add(new_user)
-    db.session.commit()
-    return user_schema.jsonify(new_user), 201
-
-# PATCH update user profile
-
+# ── PATCH /api/users/<id> ─────────────────────────────────────────────────────
 
 @user_bp.route('/<int:user_id>', methods=['PATCH'])
+@jwt_required()
 def update_user(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+    current_user_id = int(get_jwt_identity())
+    claims = get_jwt()
+
+    if current_user_id != user_id and not is_admin(claims):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    user, err, code = get_user_or_404(user_id)
+    if err:
+        return err, code
 
     data = request.get_json()
 
-    if 'username' in data:
-        user.username = data['username']
-    if 'email' in data:
-        user.email = data['email']
-    if 'bio' in data:
-        user.bio = data['bio']
-    if 'address' in data:
-        user.address = data['address']
-    if 'phone' in data:
-        user.phone = data['phone']
-    if 'avatar_url' in data:
-        user.avatar_url = data['avatar_url']
-    if 'suspended' in data:
-        user.suspended = data['suspended']
-    if 'last_login' in data:
-        user.last_login = datetime.fromisoformat(data['last_login'])
-    if 'role' in data and data['role'] in ['user', 'admin']:
+    # Profile fields — any user can update their own
+    for field in ('username', 'email', 'bio', 'address', 'phone', 'avatar_url'):
+        if field in data:
+            setattr(user, field, data[field])
+
+    # Admin-only fields
+    if 'role' in data:
+        if not is_admin(claims):
+            return jsonify({'error': 'Only admins can change roles'}), 403
+        if data['role'] not in ('user', 'admin'):
+            return jsonify({'error': 'Invalid role'}), 400
+        old_role = user.role
         user.role = data['role']
+        log_audit(
+            current_user_id, "CHANGE_ROLE", user_id,
+            f"Changed {user.username}'s role from {old_role} to {data['role']}"
+        )
+
+    if 'suspended' in data:
+        if not is_admin(claims):
+            return jsonify({'error': 'Only admins can suspend accounts'}), 403
+        user.suspended = data['suspended']
+        action = "SUSPEND_USER" if data['suspended'] else "UNSUSPEND_USER"
+        log_audit(current_user_id, action, user_id,
+                  f"{action}: {user.username}")
+
+    if 'role' not in data and 'suspended' not in data:
+        log_audit(
+            current_user_id, "UPDATE_PROFILE", user_id,
+            f"{user.username} updated their profile"
+        )
 
     user.first_login = False
-    db.session.commit()
-    return user_schema.jsonify(user), 200
 
-# PATCH change password
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Update failed', 'details': str(e)}), 500
 
+    return jsonify({'user': user.to_dict()}), 200
+
+
+# ── PATCH /api/users/<id>/change-password ─────────────────────────────────────
 
 @user_bp.route('/<int:user_id>/change-password', methods=['PATCH'])
+@jwt_required()
 def change_password(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+    current_user_id = int(get_jwt_identity())
+    claims = get_jwt()
+
+    if current_user_id != user_id and not is_admin(claims):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    user, err, code = get_user_or_404(user_id)
+    if err:
+        return err, code
 
     data = request.get_json()
     old_password = data.get('old_password')
     new_password = data.get('new_password')
 
     if not new_password:
-        return jsonify({'error': 'New password is required.'}), 400
+        return jsonify({'error': 'New password is required'}), 400
 
-    # Profile page sends old_password — verify it
-    if old_password is not None:
-        if user.password != old_password:
-            return jsonify({'error': 'Old password is incorrect.'}), 400
+    # Non-admins must verify their old password
+    if not is_admin(claims):
+        if not old_password:
+            return jsonify({'error': 'Old password is required'}), 400
+        if not user.check_password(old_password):
+            return jsonify({'error': 'Old password is incorrect'}), 401
 
-    user.password = new_password
-    db.session.commit()
+    user.password_hash = new_password
+    log_audit(current_user_id, "CHANGE_PASSWORD", user_id,
+              f"{user.username} changed their password")
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Password change failed', 'details': str(e)}), 500
+
     return jsonify({'message': 'Password updated successfully'}), 200
 
-# DELETE user
 
+# ── DELETE /api/users/<id> ────────────────────────────────────────────────────
 
 @user_bp.route('/<int:user_id>', methods=['DELETE'])
+@jwt_required()
 def delete_user(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+    current_user_id = int(get_jwt_identity())
+    claims = get_jwt()
+
+    if current_user_id != user_id and not is_admin(claims):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    user, err, code = get_user_or_404(user_id)
+    if err:
+        return err, code
+
+    log_audit(current_user_id, "DELETE_ACCOUNT", user_id,
+              f"Account deleted: {user.username}")
     db.session.delete(user)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Delete failed', 'details': str(e)}), 500
+
     return jsonify({'message': 'User deleted successfully'}), 200
-
-# POST login
-
-
-@user_bp.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    email = data.get('email', '').lower()
-    password = data.get('password')
-
-    user = User.query.filter_by(email=email).first()
-    if not user or user.password != password:
-        return jsonify({'error': 'Invalid email or password'}), 401
-
-    if user.suspended:
-        return jsonify({'error': 'Account is suspended'}), 403
-
-    user.last_login = datetime.utcnow()
-    db.session.commit()
-
-    return user_schema.jsonify(user), 200

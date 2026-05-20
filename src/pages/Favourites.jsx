@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import useFavorites from "../hooks/useFavourites";
 import Loader from "../components/Loader";
 import ErrorMessages from "../components/ErrorMessages";
@@ -65,8 +64,12 @@ export default function Favourites() {
 
   /* ── Remove ── */
   const handleRemove = async (song) => {
-    await removeFavorite(song.id);
-    showToast(`💔 "${song.title}" removed from favourites.`);
+    try {
+      await removeFavorite(song.id);
+      showToast(`💔 "${song.title}" removed from favourites.`);
+    } catch {
+      showToast(`Could not remove "${song.title}". Please try again.`);
+    }
   };
 
   if (loading)
@@ -75,16 +78,11 @@ export default function Favourites() {
         <Loader />
       </div>
     );
-  if (error)
-    return (
-      <div className="page-container">
-        <ErrorMessages message={error} />
-      </div>
-    );
 
   return (
     <div className="page-container">
       {toast && <div className="toast">{toast}</div>}
+      {error && <ErrorMessages message={error} />}
 
       <div className="page-header">
         <h1 className="page-title">My Favourites</h1>

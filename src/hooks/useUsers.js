@@ -1,68 +1,127 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-const API_BASE = `${baseURL}/api`;
+import {
+  getUsers,
+  getPendingAdmins,
+  deleteUserAdmin,
+  updateUser,
+  promoteUser as apiPromoteUser,
+  toggleSuspendUser,
+  approveAdmin as apiApproveAdmin,
+  rejectAdmin as apiRejectAdmin,
+} from "../api/user.js";
 
 export function useUsers() {
   const [users, setUsers] = useState([]);
+  const [pendingAdmins, setPendingAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     fetchUsers();
+    fetchPendingAdmins();
   }, []);
 
   const fetchUsers = async () => {
     setLoading(true);
+    setError("");
     try {
-      const res = await axios.get(`${API_BASE}/users`);
-      setUsers(res.data);
-    } catch (err) {
+      const data = await getUsers();
+      setUsers(data);
+    } catch {
       setError("Failed to fetch users.");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchPendingAdmins = async () => {
+    try {
+      const data = await getPendingAdmins();
+      setPendingAdmins(data);
+    } catch {
+      setError("Failed to fetch pending admins.");
+    }
+  };
+
   const deleteUser = async (id) => {
     try {
-      await axios.delete(`${API_BASE}/users/${id}`);
+      await deleteUserAdmin(id); // ← admin delete endpoint
       setUsers((prev) => prev.filter((u) => u.id !== id));
-    } catch (err) {
+    } catch {
       setError("Failed to delete user.");
+    }
+  };
+
+  const changeRole = async (id, newRole) => {
+    try {
+      await updateUser(id, { role: newRole }); // ← removed actorId, JWT handles it
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, role: newRole } : u))
+      );
+    } catch {
+      setError("Failed to change user role.");
     }
   };
 
   const promoteUser = async (id) => {
     try {
-      await axios.patch(`${API_BASE}/admin/users/${id}/promote`);
+      const res = await apiPromoteUser(id);
       setUsers((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, role: "admin" } : u)),
+        prev.map((u) =>
+          u.id === id ? { ...u, role: "admin", approved: false } : u
+        )
       );
-    } catch (err) {
+      setPendingAdmins((prev) => [...prev, res.user ?? res]);
+    } catch {
       setError("Failed to promote user.");
     }
   };
 
   const suspendUser = async (id) => {
     try {
-      await axios.patch(`${API_BASE}/admin/users/${id}/suspend`);
+      await toggleSuspendUser(id); // ← backend toggles, no need to track currentStatus
       setUsers((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, suspended: !u.suspended } : u)),
+        prev.map((u) => (u.id === id ? { ...u, suspended: !u.suspended } : u))
       );
-    } catch (err) {
+    } catch {
       setError("Failed to suspend user.");
+    }
+  };
+
+  const approveAdmin = async (id) => {
+    try {
+      await apiApproveAdmin(id);
+      setPendingAdmins((prev) => prev.filter((u) => u.id !== id));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, approved: true } : u))
+      );
+    } catch {
+      setError("Failed to approve admin.");
+    }
+  };
+
+  const rejectAdmin = async (id) => {
+    try {
+      await apiRejectAdmin(id);
+      setPendingAdmins((prev) => prev.filter((u) => u.id !== id));
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+    } catch {
+      setError("Failed to reject admin.");
     }
   };
 
   return {
     users,
+    pendingAdmins,
     loading,
     error,
     fetchUsers,
+    fetchPendingAdmins,
     deleteUser,
+    changeRole,
     promoteUser,
     suspendUser,
+    approveAdmin,
+    rejectAdmin,
   };
 }

@@ -3,16 +3,17 @@ import {
   getUsers,
   getUserById,
   updateUser,
-  deleteUser as apiDeleteUser,
+  deleteUserAdmin,
   changeUserPassword,
+  toggleSuspendUser,
 } from "../api/user.js";
-//custom hook that provides admin user management functionality. It allows fetching all users, fetching details of a single user, updating user fields, changing passwords, toggling suspension status, and deleting users. It also manages loading and error states for these operations.
+
 export function useAdminUsers() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  //fetch all users from the API
+
   const loadUsers = async () => {
     try {
       setLoading(true);
@@ -23,7 +24,7 @@ export function useAdminUsers() {
       setLoading(false);
     }
   };
-  //load details of a single user by id and handle cases where certain fields may be missing by providing default values. It also manages loading and error states for this operation.
+
   const loadUserDetails = async (id) => {
     try {
       setLoading(true);
@@ -45,42 +46,46 @@ export function useAdminUsers() {
       setLoading(false);
     }
   };
-  //reloads  all the users
+
   const refreshUser = async (id) => {
     await loadUsers();
     if (selectedUser?.id === id) await loadUserDetails(id);
   };
-  //update  a user details
+
   const updateUserField = async (id, updates) => {
     try {
-      await updateUser(id, updates);
+      await updateUser(id, updates); // actorId removed — JWT handles it
       await refreshUser(id);
     } catch {
       setError("Failed to update user.");
     }
   };
-  //change a users password
+
+
   const changePassword = async (id, newPassword) => {
     try {
-      await updateUser(id, { password: newPassword });
+      await changeUserPassword(id, newPassword);
       if (selectedUser?.id === id) await loadUserDetails(id);
-    } catch {
-      setError("Failed to change password.");
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || "Unknown error";
+      console.error("changePassword error:", msg, err?.response);
+      setError(msg);
+      throw err;
     }
   };
-  //flip the suspended status of a user (suspend if currently active, or unsuspend if currently suspended)
-  const toggleSuspend = async (id, currentStatus) => {
+
+  const toggleSuspend = async (id) => {
     try {
-      await updateUser(id, { suspended: !currentStatus });
+      await toggleSuspendUser(id); // backend toggles — no currentStatus needed
       await refreshUser(id);
     } catch {
       setError("Failed to update suspension status.");
     }
   };
-  //delete a user by id and refresh the user list. If the deleted user is currently selected, it also clears the selected user state.
+
   const deleteUser = async (id) => {
     try {
-      await apiDeleteUser(id);
+      await deleteUserAdmin(id); // uses admin delete endpoint
       await loadUsers();
       if (selectedUser?.id === id) setSelectedUser(null);
     } catch {

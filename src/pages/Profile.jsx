@@ -9,7 +9,7 @@ export default function Profile() {
   const [form, setForm] = useState({
     username: user?.username || "",
     email: user?.email || "",
-    bio: user?.profile?.bio || "",
+    bio: user?.bio || "",           
     address: user?.address || "",
     phone: user?.phone || "",
   });
@@ -34,11 +34,7 @@ export default function Profile() {
       errs.email = "Valid email is required.";
     if (form.phone && !form.phone.match(/^\+?\d{7,15}$/))
       errs.phone = "Phone must be digits, 7–15 characters.";
-    if (
-      form.address &&
-      form.address.trim().length > 0 &&
-      form.address.trim().length < 5
-    )
+    if (form.address?.trim().length > 0 && form.address.trim().length < 5)
       errs.address = "Address must be at least 5 characters.";
     return errs;
   };
@@ -56,8 +52,7 @@ export default function Profile() {
       !/[0-9]/.test(passwords.new) ||
       !/[!@#$%^&*]/.test(passwords.new)
     ) {
-      errs.new =
-        "Password must include uppercase, lowercase, number, and symbol.";
+      errs.new = "Password must include uppercase, lowercase, number, and symbol.";
     }
     return errs;
   };
@@ -73,13 +68,22 @@ export default function Profile() {
       await updateUser(user.id, {
         username: form.username,
         email: form.email,
+        bio: form.bio,        
         address: form.address,
         phone: form.phone,
-        profile: { ...user.profile, bio: form.bio },
       });
-      // Refresh localStorage so the sidebar/context reflects changes
-      const updated = { ...user, username: form.username, email: form.email };
-      localStorage.setItem("tunely_user", JSON.stringify(updated));
+
+      
+      const updated = {
+        ...user,
+        username: form.username,
+        email: form.email,
+        bio: form.bio,
+        address: form.address,
+        phone: form.phone,
+      };
+      login(updated, localStorage.getItem("access_token"), localStorage.getItem("refresh_token"));
+
       setErrors({});
       showAlert("success", "Profile updated successfully!");
     } catch {
@@ -117,15 +121,12 @@ export default function Profile() {
 
         {firstLogin && (
           <div className="auth-alert auth-alert--error">
-            ⚠ First login detected — please update your profile before
-            continuing.
+            ⚠ First login detected — please update your profile before continuing.
           </div>
         )}
 
         {alert && (
-          <div
-            className={`auth-alert ${alert.type === "error" ? "auth-alert--error" : "auth-alert--success"}`}
-          >
+          <div className={`auth-alert ${alert.type === "error" ? "auth-alert--error" : "auth-alert--success"}`}>
             {alert.message}
           </div>
         )}
@@ -140,9 +141,7 @@ export default function Profile() {
               onChange={(e) => setForm({ ...form, username: e.target.value })}
               className={errors.username ? "input-error" : ""}
             />
-            {errors.username && (
-              <p className="field-error">{errors.username}</p>
-            )}
+            {errors.username && <p className="field-error">{errors.username}</p>}
           </div>
 
           <div className="auth-field">
@@ -202,9 +201,7 @@ export default function Profile() {
             <input
               type="password"
               value={passwords.old}
-              onChange={(e) =>
-                setPasswords({ ...passwords, old: e.target.value })
-              }
+              onChange={(e) => setPasswords({ ...passwords, old: e.target.value })}
               className={pwErrors.old ? "input-error" : ""}
             />
             {pwErrors.old && <p className="field-error">{pwErrors.old}</p>}
@@ -215,9 +212,7 @@ export default function Profile() {
             <input
               type="password"
               value={passwords.new}
-              onChange={(e) =>
-                setPasswords({ ...passwords, new: e.target.value })
-              }
+              onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
               className={pwErrors.new ? "input-error" : ""}
             />
             {pwErrors.new && <p className="field-error">{pwErrors.new}</p>}
