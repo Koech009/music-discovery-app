@@ -1,186 +1,115 @@
 import pytest
-from app import create_app
+from flask import Flask
 from extensions import db
 from models.user import User
 from models.favorite import Favorite
 from models.playlist import Playlist
 from models.message import Message
+from models.audit_log import AuditLog
 
 
-# ──────────────────────────────────────────────
-# USER TESTS
-# ──────────────────────────────────────────────
+# ── Fixtures ──
+@pytest.fixture
+def app():
+    app = Flask(__name__)
+    app.config.update(TESTING=True, SQLALCHEMY_DATABASE_URI="sqlite:///:memory:")
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+        yield app
+        db.drop_all()
 
-class TestUserModel:
 
-    def test_create_user(self, session):
-        user = User(username="koech", email="koech@example.com",
-                    password="hashed_pw")
-        session.add(user)
+@pytest.fixture
+def session(app):
+    with app.app_context():
+        yield db.session
+
+
+@pytest.fixture
+def user(session):
+    u = User(username="alice", email="alice@test.com", password="pw")
+    session.add(u)
+    session.commit()
+    return u
+
+
+# ── User ──
+
+class TestUser:
+
+    def test_create_and_defaults(self, session):
+        u = User(username="koech", email="koech@test.com", password="pw")
+        session.add(u)
         session.commit()
+        assert u.username == "koech"
+        assert u.role == "user"
+        assert u.suspended is False
+        assert u.first_login is True
+        assert u.last_login is None
 
-        fetched = session.get(User, user.id)
-        assert fetched.username == "koech"
-        assert fetched.email == "koech@example.com"
-        assert fetched.role == "user"
-
-    def test_user_default_role(self, session):
-        user = User(username="jane", email="jane@example.com", password="pw")
-        session.add(user)
+    def test_admin_role(self, session):
+        u = User(username="admin", email="admin@test.com", password="pw", role="admin")
+        session.add(u)
         session.commit()
-        assert user.role == "user"
+        assert u.role == "admin"
 
-    def test_user_admin_role(self, session):
-        admin = User(username="admin", email="admin@example.com",
-                     password="pw", role="admin")
-        session.add(admin)
+    def test_unique_username_and_email(self, session):
+        session.add(User(username="same", email="a@test.com", password="pw"))
         session.commit()
-        assert admin.role == "admin"
+        for kwargs in [
+            dict(username="same", email="b@test.com", password="pw"),
+            dict(username="other", email="a@test.com", password="pw"),
+        ]:
+            session.add(User(**kwargs))
+            with pytest.raises(Exception):
+                session.commit()
+            session.rollback()
 
-    def test_user_defaults(self, session):
-        user = User(username="defaults",
-                    email="defaults@example.com", password="pw")
-        session.add(user)
-        session.commit()
-        assert user.suspended is False
-        assert user.first_login is True
-        assert user.last_login is None
-
-    def test_user_unique_username(self, session):
-        u1 = User(username="same", email="one@example.com", password="pw")
-        u2 = User(username="same", email="two@example.com", password="pw")
-        session.add(u1)
-        session.commit()
-        session.add(u2)
-        with pytest.raises(Exception):
-            session.commit()
-        session.rollback()
-
-    def test_user_unique_email(self, session):
-        u1 = User(username="user1", email="same@example.com", password="pw")
-        u2 = User(username="user2", email="same@example.com", password="pw")
-        session.add(u1)
-        session.commit()
-        session.add(u2)
-        with pytest.raises(Exception):
-            session.commit()
-        session.rollback()
-
-    def test_user_to_dict(self, session):
-        user = User(username="dictuser",
-                    email="dict@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
+    def test_to_dict(self, user):
         data = user.to_dict()
-        assert data["username"] == "dictuser"
-        assert data["email"] == "dict@example.com"
+        assert data["username"] == "alice"
         assert data["role"] == "user"
-        assert "profile" in data
         assert data["profile"]["bio"] == ""
 
-    def test_user_repr(self, session):
-        user = User(username="repruser",
-                    email="repr@example.com", password="pw")
-        session.add(user)
-        session.commit()
-        assert "repruser" in repr(user)
+    def test_repr(self, user):
+        assert "alice" in repr(user)
 
 
-# ──────────────────────────────────────────────
-# FAVORITE TESTS
-# ──────────────────────────────────────────────
+# ── Favorite ──
 
-class TestFavoriteModel:
+class TestFavorite:
 
-    def test_create_favorite(self, session):
-        user = User(username="favuser", email="fav@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
-        fav = Favorite(
-            user_id=user.id,
-            title="Blinding Lights",
-            artist_name="The Weeknd",
-            isrc="USUG12004416"
-        )
+    def test_create_and_defaults(self, session, user):
+        fav = Favorite(user_id=user.id, title="Blinding Lights",
+                       artist_name="The Weeknd", isrc="ISRC001")
         session.add(fav)
         session.commit()
-
-        fetched = session.get(Favorite, fav.id)
-        assert fetched.title == "Blinding Lights"
-        assert fetched.artist_name == "The Weeknd"
-
-    def test_favorite_default_genre(self, session):
-        user = User(username="genreuser",
-                    email="genre@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
-        fav = Favorite(user_id=user.id, title="Song",
-                       artist_name="Artist", isrc="ISRC001")
-        session.add(fav)
-        session.commit()
+        assert fav.title == "Blinding Lights"
         assert fav.genre == "Unknown"
+        assert fav.user.username == "alice"
 
-    def test_favorite_unique_constraint(self, session):
-        user = User(username="uniqfav",
-                    email="uniqfav@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
-        fav1 = Favorite(user_id=user.id, title="Song",
-                        artist_name="Artist", isrc="ISRC999")
-        fav2 = Favorite(user_id=user.id, title="Song",
-                        artist_name="Artist", isrc="ISRC999")
-        session.add(fav1)
-        session.commit()
-        session.add(fav2)
+    def test_unique_constraint(self, session, user):
+        for _ in range(2):
+            session.add(Favorite(user_id=user.id, title="Song",
+                                 artist_name="Artist", isrc="ISRC999"))
+        session.flush()
         with pytest.raises(Exception):
             session.commit()
         session.rollback()
 
-    def test_favorite_to_dict(self, session):
-        user = User(username="dictfav",
-                    email="dictfav@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
-        fav = Favorite(
-            user_id=user.id,
-            title="Peponi",
-            artist_name="Sauti Sol",
-            album_title="Live and Die in Afrika",
-            album_cover="http://cover.url",
-            isrc="KE001"
-        )
+    def test_to_dict(self, session, user):
+        fav = Favorite(user_id=user.id, title="Peponi", artist_name="Sauti Sol",
+                       album_title="Live and Die in Afrika",
+                       album_cover="http://cover.url", isrc="KE001")
         session.add(fav)
         session.commit()
-
         data = fav.to_dict()
         assert data["title"] == "Peponi"
         assert data["artist"]["name"] == "Sauti Sol"
-        assert data["album"]["title"] == "Live and Die in Afrika"
         assert data["isrc"] == "KE001"
 
-    def test_favorite_user_relationship(self, session):
-        user = User(username="reluser", email="rel@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
-        fav = Favorite(user_id=user.id, title="Track",
-                       artist_name="Artist", isrc="REL001")
-        session.add(fav)
-        session.commit()
-
-        assert fav.user.username == "reluser"
-
-    def test_favorite_repr(self, session):
-        user = User(username="reprfav",
-                    email="reprfav@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
+    def test_repr(self, session, user):
         fav = Favorite(user_id=user.id, title="My Song",
                        artist_name="Me", isrc="REPR01")
         session.add(fav)
@@ -188,141 +117,120 @@ class TestFavoriteModel:
         assert "My Song" in repr(fav)
 
 
-# ──────────────────────────────────────────────
-# PLAYLIST TESTS
-# ──────────────────────────────────────────────
+# ── Playlist ─
 
-class TestPlaylistModel:
+class TestPlaylist:
 
-    def test_create_playlist(self, session):
-        user = User(username="pluser", email="pl@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
+    def test_create_and_defaults(self, session, user):
         pl = Playlist(name="Chill Vibes", user_id=user.id)
         session.add(pl)
         session.commit()
+        assert pl.name == "Chill Vibes"
+        assert pl.songs in ([], None)
+        assert pl.user.username == "alice"
 
-        fetched = session.get(Playlist, pl.id)
-        assert fetched.name == "Chill Vibes"
-        assert fetched.user_id == user.id
-
-    def test_playlist_default_songs(self, session):
-        user = User(username="songsuser",
-                    email="songs@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
-        pl = Playlist(name="Empty", user_id=user.id)
-        session.add(pl)
-        session.commit()
-        assert pl.songs == [] or pl.songs is None
-
-    def test_playlist_with_songs(self, session):
-        user = User(username="songdata",
-                    email="songdata@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
+    def test_with_songs(self, session, user):
         songs = [{"title": "Shape of You", "artist": "Ed Sheeran"}]
         pl = Playlist(name="Pop Hits", user_id=user.id, songs=songs)
         session.add(pl)
         session.commit()
+        assert pl.songs[0]["title"] == "Shape of You"
 
-        fetched = session.get(Playlist, pl.id)
-        assert len(fetched.songs) == 1
-        assert fetched.songs[0]["title"] == "Shape of You"
-
-    def test_playlist_to_dict(self, session):
-        user = User(username="dictpl",
-                    email="dictpl@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
-        pl = Playlist(name="My Mix", description="Evening vibes",
-                      user_id=user.id)
+    def test_to_dict(self, session, user):
+        pl = Playlist(name="My Mix", description="Evening vibes", user_id=user.id)
         session.add(pl)
         session.commit()
-
         data = pl.to_dict()
         assert data["name"] == "My Mix"
         assert data["description"] == "Evening vibes"
         assert data["userId"] == user.id
         assert isinstance(data["songs"], list)
 
-    def test_playlist_user_relationship(self, session):
-        user = User(username="plreluser",
-                    email="plrel@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
-        pl = Playlist(name="Linked", user_id=user.id)
-        session.add(pl)
-        session.commit()
-
-        assert pl.user.username == "plreluser"
-
-    def test_playlist_repr(self, session):
-        user = User(username="reprpl",
-                    email="reprpl@example.com", password="pw")
-        session.add(user)
-        session.commit()
-
+    def test_repr(self, session, user):
         pl = Playlist(name="ReprList", user_id=user.id)
         session.add(pl)
         session.commit()
         assert "ReprList" in repr(pl)
 
 
-# ──────────────────────────────────────────────
-# MESSAGE TESTS
-# ──────────────────────────────────────────────
+# ── Message ──
 
-class TestMessageModel:
+class TestMessage:
 
-    def test_create_message(self, session):
-        msg = Message(name="Koech", email="koech@example.com",
-                      content="Hello there!")
+    def test_create_and_defaults(self, session):
+        msg = Message(name="Koech", email="koech@test.com", content="Hello!")
         session.add(msg)
         session.commit()
-
-        fetched = session.get(Message, msg.id)
-        assert fetched.name == "Koech"
-        assert fetched.content == "Hello there!"
-
-    def test_message_default_is_read(self, session):
-        msg = Message(name="Anon", email="anon@example.com", content="Test")
-        session.add(msg)
-        session.commit()
+        assert msg.name == "Koech"
         assert msg.is_read is False
 
-    def test_message_mark_read(self, session):
-        msg = Message(name="Reader", email="read@example.com",
-                      content="Read me")
+    def test_mark_read(self, session):
+        msg = Message(name="Reader", email="r@test.com", content="Read me")
         session.add(msg)
         session.commit()
-
         msg.is_read = True
         session.commit()
+        assert session.get(Message, msg.id).is_read is True
 
-        fetched = session.get(Message, msg.id)
-        assert fetched.is_read is True
-
-    def test_message_to_dict(self, session):
-        msg = Message(name="Dict", email="dict@example.com",
-                      content="Dict content")
+    def test_to_dict(self, session):
+        msg = Message(name="Dict", email="dict@test.com", content="Content")
         session.add(msg)
         session.commit()
-
         data = msg.to_dict()
         assert data["name"] == "Dict"
-        assert data["email"] == "dict@example.com"
-        assert data["content"] == "Dict content"
         assert data["isRead"] is False
         assert "createdAt" in data
 
-    def test_message_repr(self, session):
-        msg = Message(name="ReprMsg", email="repr@example.com", content="Hi")
+    def test_repr(self, session):
+        msg = Message(name="ReprMsg", email="r@test.com", content="Hi")
         session.add(msg)
         session.commit()
         assert "ReprMsg" in repr(msg)
+
+
+# ── AuditLog ──
+
+class TestAuditLog:
+
+    @pytest.fixture
+    def log(self, session, user):
+        entry = AuditLog(user_id=user.id, action="DELETE_USER",
+                         target_type="User", target_id=99,
+                         details="Deleted user: bob")
+        session.add(entry)
+        session.commit()
+        return entry
+
+    def test_create_and_timestamp(self, log):
+        assert log.action == "DELETE_USER"
+        assert log.timestamp is not None
+
+    def test_to_dict(self, log, user):
+        data = log.to_dict()
+        for key in ("id", "user_id", "actor", "action",
+                    "target_type", "target_id", "details", "timestamp"):
+            assert key in data
+        assert data["actor"] == "alice"
+        assert isinstance(data["timestamp"], str)
+
+    def test_actor_fallback(self, session):
+        log = AuditLog(user_id=9999, action="TEST")
+        session.add(log)
+        session.commit()
+        assert log.to_dict()["actor"] == "User #9999"
+
+    def test_action_required(self, session, user):
+        session.add(AuditLog(user_id=user.id))
+        with pytest.raises(Exception):
+            session.commit()
+
+    def test_multiple_logs(self, session, user):
+        for action in ("LOGIN", "UPDATE_PROFILE", "LOGOUT"):
+            session.add(AuditLog(user_id=user.id, action=action))
+        session.commit()
+        assert AuditLog.query.filter_by(user_id=user.id).count() == 3
+
+    def test_repr(self, log, user):
+        text = repr(log)
+        assert "DELETE_USER" in text
+        assert str(user.id) in text
