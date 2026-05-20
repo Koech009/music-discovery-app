@@ -6,6 +6,7 @@ function ChangePasswordModal({ user, onClose, changePassword }) {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const strongPasswordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
@@ -18,25 +19,26 @@ function ChangePasswordModal({ user, onClose, changePassword }) {
       setError("Password is required.");
       return;
     }
-
     if (!strongPasswordRegex.test(password)) {
       setError(
         "Password must be at least 8 characters, include uppercase, lowercase, number, and symbol.",
       );
       return;
     }
-
     if (password !== confirm) {
       setError("Passwords do not match.");
       return;
     }
 
+    setLoading(true);
     try {
       await changePassword(user.id, password);
       setSuccess("Password changed successfully!");
       setTimeout(() => onClose(), 1500);
     } catch {
       setError("Failed to change password. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,19 +50,24 @@ function ChangePasswordModal({ user, onClose, changePassword }) {
         {error && <p className="error">{error}</p>}
         {success && <p className="success">{success}</p>}
 
-        <input
-          type="password"
-          placeholder="New password"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            setError(""); // clear error as user types
-          }}
-        />
+        {/* hidden dummy fields to trick browser autofill */}
+        <input type="text" style={{ display: "none" }} />
+        <input type="password" style={{ display: "none" }} />
 
         <input
           type="password"
+          placeholder="New password"
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setError("");
+          }}
+        />
+        <input
+          type="password"
           placeholder="Confirm password"
+          autoComplete="new-password"
           value={confirm}
           onChange={(e) => {
             setConfirm(e.target.value);
@@ -68,8 +75,10 @@ function ChangePasswordModal({ user, onClose, changePassword }) {
           }}
         />
 
-        <button onClick={handleSave}>Save</button>
-        <button onClick={onClose} className="cancel-btn">
+        <button onClick={handleSave} disabled={loading}>
+          {loading ? "Saving..." : "Save"}
+        </button>
+        <button onClick={onClose} className="cancel-btn" disabled={loading}>
           Cancel
         </button>
       </div>
