@@ -4,20 +4,19 @@ import * as playlistAPI from "../api/playlists.js";
 
 export function usePlaylists() {
   const { user } = useAuth();
-  const [playlists, setPlaylists] = useState(undefined); // undefined = loading, [] = loaded/empty
-
+  const [playlists, setPlaylists] = useState(undefined); 
   /* =========================
      LOAD — re-runs when user logs in/out
   ========================= */
   useEffect(() => {
     if (!user?.id) {
-      setPlaylists([]); // clear on logout
+      setPlaylists([]);
       return;
     }
     (async () => {
       try {
-        const data = await playlistAPI.getPlaylists(user.id);
-        setPlaylists(data);
+        const data = await playlistAPI.getPlaylists(); // ← removed user.id, JWT handles it
+        setPlaylists(data.playlists ?? data);          // ← unwrap { playlists: [...] }
       } catch (err) {
         console.error("Failed to fetch playlists:", err);
         setPlaylists([]);
@@ -28,10 +27,9 @@ export function usePlaylists() {
   /* =========================
      HELPERS
   ========================= */
-  // IDs are strings
   const updateLocal = (playlistId, updated) =>
     setPlaylists((prev) =>
-      prev.map((pl) => (pl.id === playlistId ? updated : pl)),
+      prev.map((pl) => (pl.id === playlistId ? updated : pl))
     );
 
   /* =========================
@@ -39,11 +37,8 @@ export function usePlaylists() {
   ========================= */
   const createPlaylist = async (name, description = "") => {
     try {
-      const newPl = await playlistAPI.createPlaylist(
-        name,
-        description,
-        user.id,
-      );
+      const res = await playlistAPI.createPlaylist(name, description); // ← removed user.id
+      const newPl = res.playlist ?? res;                               // ← unwrap response
       setPlaylists((prev) => [...(prev ?? []), newPl]);
       return newPl.id;
     } catch (err) {
@@ -56,7 +51,6 @@ export function usePlaylists() {
      READ
   ========================= */
   const getPlaylist = (id) => (playlists ?? []).find((pl) => pl.id === id);
-
   const getAllPlaylists = () => playlists ?? [];
 
   /* =========================
@@ -65,20 +59,17 @@ export function usePlaylists() {
   const addSongToPlaylist = async (song, playlistId) => {
     try {
       const updated = await playlistAPI.addSongToPlaylist(playlistId, song);
-      updateLocal(playlistId, updated);
+      updateLocal(playlistId, updated.playlist ?? updated); // ← unwrap response
     } catch (err) {
       console.error("Failed to add song:", err);
-      throw err; // re-throw so caller can handle duplicate toast
+      throw err;
     }
   };
 
   const removeSongFromPlaylist = async (songId, playlistId) => {
     try {
-      const updated = await playlistAPI.removeSongFromPlaylist(
-        playlistId,
-        songId,
-      );
-      updateLocal(playlistId, updated);
+      const updated = await playlistAPI.removeSongFromPlaylist(playlistId, songId);
+      updateLocal(playlistId, updated.playlist ?? updated); // ← unwrap response
     } catch (err) {
       console.error("Failed to remove song:", err);
       throw err;
@@ -88,7 +79,7 @@ export function usePlaylists() {
   const renamePlaylist = async (playlistId, newName) => {
     try {
       const updated = await playlistAPI.renamePlaylist(playlistId, newName);
-      updateLocal(playlistId, updated);
+      updateLocal(playlistId, updated.playlist ?? updated); // ← unwrap response
     } catch (err) {
       console.error("Failed to rename playlist:", err);
       throw err;
@@ -97,11 +88,8 @@ export function usePlaylists() {
 
   const updatePlaylistDescription = async (playlistId, newDescription) => {
     try {
-      const updated = await playlistAPI.updatePlaylistDescription(
-        playlistId,
-        newDescription,
-      );
-      updateLocal(playlistId, updated);
+      const updated = await playlistAPI.updatePlaylistDescription(playlistId, newDescription);
+      updateLocal(playlistId, updated.playlist ?? updated); // ← unwrap response
     } catch (err) {
       console.error("Failed to update description:", err);
       throw err;

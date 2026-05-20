@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getAuditLogs } from "../api/auditlogs";
 
 export default function useAuditLogs() {
@@ -10,14 +10,11 @@ export default function useAuditLogs() {
   const [total, setTotal] = useState(0);
   const perPage = 20;
 
-  useEffect(() => {
-    fetchLogs(page);
-  }, [page]);
-
-  const fetchLogs = async (currentPage) => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
-      const data = await getAuditLogs(currentPage, perPage);
+      const data = await getAuditLogs(page, perPage);
       setLogs(data.logs);
       setTotalPages(data.pages);
       setTotal(data.total);
@@ -26,7 +23,11 @@ export default function useAuditLogs() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]); 
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const goToPage = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -34,5 +35,5 @@ export default function useAuditLogs() {
     }
   };
 
-  return { logs, loading, error, page, totalPages, total, perPage, goToPage };
+  return { logs, loading, error, page, totalPages, total, perPage, goToPage, refetch: fetchLogs };
 }

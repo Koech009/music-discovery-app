@@ -11,48 +11,48 @@ function useMessage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch all messages
   const fetchMessages = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await getMessages();
-      setMessages(res.data);
-      setError(null);
-    } catch (err) {
+      const data = await getMessages();
+      setMessages(data);
+    } catch {
       setError("Failed to fetch messages");
     } finally {
       setLoading(false);
     }
   };
 
-  // Add new message (used by contact form)
+  // Public — no JWT needed (contact form)
   const createMessage = async (message) => {
     try {
-      const res = await addMessage(message);
-      setMessages((prev) => [...prev, res.data]);
-    } catch (err) {
+      const data = await addMessage(message);
+      setMessages((prev) => [...prev, data]);
+    } catch {
       setError("Failed to send message");
     }
   };
 
-  // Mark a message as read
+  // Admin only
   const markRead = async (id) => {
     try {
       await markAsRead(id);
+      
       setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, isRead: true } : m)),
+        prev.map((m) => (m.id === id ? { ...m, is_read: true, isRead: true } : m))
       );
-    } catch (err) {
+    } catch {
       setError("Failed to mark message as read");
     }
   };
 
-  // Delete message
+  // Admin only
   const removeMessage = async (id) => {
     try {
       await deleteMessage(id);
       setMessages((prev) => prev.filter((m) => m.id !== id));
-    } catch (err) {
+    } catch {
       setError("Failed to delete message");
     }
   };

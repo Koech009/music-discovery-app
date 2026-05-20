@@ -1,15 +1,14 @@
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
 import {
   getUsers,
   getUserById,
   updateUser,
-  deleteUser as apiDeleteUser,
+  deleteUserAdmin,
   changeUserPassword,
+  toggleSuspendUser,
 } from "../api/user.js";
 
 export function useAdminUsers() {
-  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -53,32 +52,31 @@ export function useAdminUsers() {
     if (selectedUser?.id === id) await loadUserDetails(id);
   };
 
-  // update a user field — always passes actorId for audit logging
   const updateUserField = async (id, updates) => {
     try {
-      await updateUser(id, { ...updates, actorId: currentUser?.id });
+      await updateUser(id, updates); // actorId removed — JWT handles it
       await refreshUser(id);
     } catch {
       setError("Failed to update user.");
     }
   };
 
+
   const changePassword = async (id, newPassword) => {
     try {
-      await updateUser(id, { password: newPassword });
+      await changeUserPassword(id, newPassword);
       if (selectedUser?.id === id) await loadUserDetails(id);
-    } catch {
-      setError("Failed to change password.");
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || "Unknown error";
+      console.error("changePassword error:", msg, err?.response);
+      setError(msg);
+      throw err;
     }
   };
 
-  // toggle suspend — passes actorId for audit logging
-  const toggleSuspend = async (id, currentStatus) => {
+  const toggleSuspend = async (id) => {
     try {
-      await updateUser(id, {
-        suspended: !currentStatus,
-        actorId: currentUser?.id,
-      });
+      await toggleSuspendUser(id); // backend toggles — no currentStatus needed
       await refreshUser(id);
     } catch {
       setError("Failed to update suspension status.");
@@ -87,7 +85,7 @@ export function useAdminUsers() {
 
   const deleteUser = async (id) => {
     try {
-      await apiDeleteUser(id);
+      await deleteUserAdmin(id); // uses admin delete endpoint
       await loadUsers();
       if (selectedUser?.id === id) setSelectedUser(null);
     } catch {

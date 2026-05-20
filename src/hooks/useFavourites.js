@@ -17,8 +17,8 @@ export default function useFavorites() {
     if (!user?.id) return;
     setLoading(true);
     setError(null);
-    getFavorites(user.id)
-      .then((data) => setFavorites(data))
+    getFavorites()
+      .then((data) => setFavorites(data.favorites ?? data))
       .catch(() => setError("Could not load favorites."))
       .finally(() => setLoading(false));
   }, [user?.id]);
@@ -29,7 +29,7 @@ export default function useFavorites() {
     const alreadyExists = favorites.some(
       (fav) =>
         (fav.isrc && song.isrc && fav.isrc === song.isrc) ||
-        (fav.title === song.title && fav.artist?.name === song.artist?.name),
+        (fav.title === song.title && fav.artist?.name === song.artist?.name)
     );
     if (alreadyExists) return { duplicate: true };
 
@@ -37,10 +37,10 @@ export default function useFavorites() {
     try {
       const genre = await fetchGenreForSong(song);
       const newFav = await apiAddFavorite(song, user.id, genre);
-      setFavorites((prev) => [...prev, newFav]);
-    } catch {
+      setFavorites((prev) => [...prev, newFav.favorite ?? newFav]);
+    } catch (err) {
       setError("Could not save favorite.");
-      throw error;
+      throw err;
     }
   }
 
@@ -49,9 +49,9 @@ export default function useFavorites() {
     try {
       await apiRemoveFavorite(id);
       setFavorites((prev) => prev.filter((f) => f.id !== id));
-    } catch {
+    } catch (err) {
       setError("Could not remove favorite.");
-      throw error;
+      throw err;
     }
   }
 
