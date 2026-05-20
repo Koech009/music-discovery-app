@@ -1,7 +1,8 @@
 import axios from "axios";
 
-const api = axios.create({ baseURL: "/api" });
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
+const api = axios.create({ baseURL: `${baseURL}/api` });
 // fetch all users
 export const getUsers = async () => (await api.get("/users")).data;
 

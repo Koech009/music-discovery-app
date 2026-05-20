@@ -49,7 +49,7 @@ coverage/
 # Build / Output
 build/
 reports/
-migrations/
+# migrations/
 
 # Local databases
 *.sqlite3
@@ -58,4 +58,5 @@ migrations/
 *.swp
 *.swo
 .env
-.venv
+.venvdb.json
+.env.production

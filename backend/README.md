@@ -4,6 +4,8 @@ RESTful API powering the Tunely Music Discovery App — user management, authent
 
 Built with Flask, SQLAlchemy, Marshmallow, and PostgreSQL.
 
+🔗 **Live Demo:** [tunely-backend.onrender.com](https://tunely-backend.onrender.com)
+
 ---
 
 ## Tech Stack

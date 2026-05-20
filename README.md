@@ -149,7 +149,7 @@ Tests are written with Vitest and React Testing Library, covering:
 ## Contributors
 
 - Ian Kipchirchir
-- Eugine Ogutu
+- Eugene Ogutu
 - Terrence Ochieng
 - Marshal Wayne
 

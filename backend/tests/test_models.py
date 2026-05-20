@@ -8,50 +8,6 @@ from models.message import Message
 
 
 # ──────────────────────────────────────────────
-# FIXTURES
-# ──────────────────────────────────────────────
-
-@pytest.fixture(scope="session")
-def app():
-    app = create_app()
-    app.config.update({
-        "TESTING": True,
-        # Use a dedicated test DB
-        "SQLALCHEMY_DATABASE_URI": "postgresql://postgres@127.0.0.1/tunely_test_db",
-    })
-
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.drop_all()
-
-
-@pytest.fixture(scope="function")
-def session(app):
-    """
-    Each test gets a transaction that is rolled back after the test,
-    so no data persists between tests.
-    """
-    with app.app_context():
-        connection = db.engine.connect()
-        transaction = connection.begin()
-
-        # Bind session to this connection
-        db.session.bind = connection
-
-        yield db.session
-
-        db.session.remove()
-        transaction.rollback()
-        connection.close()
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
-
-
-# ──────────────────────────────────────────────
 # USER TESTS
 # ──────────────────────────────────────────────
 
