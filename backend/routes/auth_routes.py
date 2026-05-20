@@ -1,48 +1,71 @@
 from flask import Blueprint, request, jsonify
-from extensions import db
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    jwt_required,
+    get_jwt_identity,
+    get_jwt
+)
+from extensions import db, token_blocklist
 from models.user import User
 from models.audit_log import AuditLog
-from schemas.user_schema import user_schema
 from marshmallow import ValidationError
-from datetime import datetime
+from schemas.user_schema import user_schema
 
 auth_bp = Blueprint('auth', __name__)
 
 
-# POST signup
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def make_tokens(user):
+    """
+    Generate access + refresh token pair with role baked in.
+    Always pass the full user object so role is current.
+    """
+    identity = str(user.id)
+    claims = {"role": user.role}
+    return (
+        create_access_token(identity=identity, additional_claims=claims),
+        create_refresh_token(identity=identity, additional_claims=claims)
+    )
+
+
+def log_audit(user_id, action, details):
+    db.session.add(AuditLog(
+        user_id=user_id,
+        action=action,
+        target_type="User",
+        target_id=user_id,
+        details=details
+    ))
+
+
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
-    try:
-        new_user = user_schema.load(data)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
+    print("RECEIVED DATA:", data)  # keep this temporarily
 
-    new_user.password = data.get('password')
+    try:
+        new_user = user_schema.load(data)  # @post_load handles hashing
+    except ValidationError as err:
+        print("VALIDATION ERRORS:", err.messages)
+        return jsonify({'errors': err.messages}), 400
 
     if User.query.filter_by(email=new_user.email).first():
         return jsonify({'error': 'Email already registered'}), 409
     if User.query.filter_by(username=new_user.username).first():
         return jsonify({'error': 'Username already taken'}), 409
 
-    # Guard against invalid roles
-    if new_user.role not in ['admin', 'user']:
+    if new_user.role not in ('admin', 'user'):
         return jsonify({'error': 'Invalid role'}), 400
 
-    # Explicit approval assignment — admins wait, users are immediate
-    new_user.approved = False if new_user.role == 'admin' else True
+    new_user.approved = new_user.role == 'user'  # ← no set_password here
 
     db.session.add(new_user)
-    db.session.flush()  # Gets new_user.id without committing
+    db.session.flush()
 
-    audit = AuditLog(
-        user_id=new_user.id,
-        action="SIGNUP",
-        target_type="User",
-        target_id=new_user.id,
-        details=f"New {new_user.role} account created: {new_user.username}"
-    )
-    db.session.add(audit)
+    log_audit(new_user.id, "SIGNUP",
+              f"New {new_user.role} account created: {new_user.username}")
 
     try:
         db.session.commit()
@@ -56,42 +79,39 @@ def signup():
             'user': user_schema.dump(new_user)
         }), 201
 
-    return user_schema.jsonify(new_user), 201
+    access_token, refresh_token = make_tokens(new_user)
 
+    return jsonify({
+        'message': 'Account created successfully.',
+        'user': user_schema.dump(new_user),
+        'access_token': access_token,
+        'refresh_token': refresh_token
+    }), 201
+# ── POST /api/auth/login ──────────────────────────────────────────────────────
 
-# POST login
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data.get('email', '').lower()
-    password = data.get('password')
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
 
     if not email or not password:
         return jsonify({'error': 'Email and password are required'}), 400
 
     user = User.query.filter_by(email=email).first()
 
-    if not user or user.password != password:
+    # Vague message prevents user enumeration
+    if not user or not user.check_password(password):
         return jsonify({'error': 'Invalid email or password'}), 401
 
     if user.suspended:
         return jsonify({'error': 'Account is suspended'}), 403
 
-    # Only admins are checked — users always pass through
-    if user.role == 'admin' and user.approved is not True:
+    if user.role == 'admin' and not user.approved:
         return jsonify({'error': 'Your admin account is pending approval'}), 403
 
-    user.last_login = datetime.utcnow()
-    user.first_login = False
-
-    audit = AuditLog(
-        user_id=user.id,
-        action="LOGIN",
-        target_type="User",
-        target_id=user.id,
-        details=f"{user.username} logged in"
-    )
-    db.session.add(audit)
+    user.update_last_login()
+    log_audit(user.id, "LOGIN", f"{user.username} logged in")
 
     try:
         db.session.commit()
@@ -99,4 +119,67 @@ def login():
         db.session.rollback()
         return jsonify({'error': 'Login failed', 'details': str(e)}), 500
 
-    return user_schema.jsonify(user), 200
+    access_token, refresh_token = make_tokens(user)
+
+    return jsonify({
+        'user': user.to_dict(),
+        'access_token': access_token,
+        'refresh_token': refresh_token
+    }), 200
+
+
+# ── POST /api/auth/refresh ────────────────────────────────────────────────────
+
+@auth_bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    user_id = int(get_jwt_identity())
+
+    # Always fetch fresh user so role changes are reflected in new token
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    if user.suspended:
+        return jsonify({'error': 'Account is suspended'}), 403
+
+    access_token, refresh_token = make_tokens(user)
+
+    return jsonify({
+        'access_token': access_token,
+        'refresh_token': refresh_token
+    }), 200
+
+
+# ── POST /api/auth/logout ─────────────────────────────────────────────────────
+
+@auth_bp.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]
+    token_blocklist.add(jti)
+
+    user_id = int(get_jwt_identity())
+    log_audit(user_id, "LOGOUT", f"User {user_id} logged out")
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Logout failed', 'details': str(e)}), 500
+
+    return jsonify({'message': 'Logged out successfully'}), 200
+
+
+# ── GET /api/auth/me ──────────────────────────────────────────────────────────
+
+@auth_bp.route('/me', methods=['GET'])
+@jwt_required()
+def me():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    return jsonify({'user': user.to_dict(include_profile=True)}), 200
