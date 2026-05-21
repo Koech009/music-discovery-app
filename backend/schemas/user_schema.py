@@ -10,7 +10,7 @@ ma = Marshmallow()
 class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = User
-        load_instance = True
+        load_instance = False
         sqla_session = db.session
         exclude = ('_password_hash',)
         unknown = EXCLUDE
