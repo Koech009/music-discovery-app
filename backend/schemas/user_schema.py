@@ -24,9 +24,11 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     # Write-only plain text password
     password = fields.String(required=True, load_only=True)
 
-    username = fields.String(required=True, validate=validate.Length(min=3, max=80))
+    username = fields.String(
+        required=True, validate=validate.Length(min=3, max=80))
     email = fields.Email(required=True)
-    role = fields.String(validate=validate.OneOf(["user", "admin"]), load_default="user")
+    role = fields.String(validate=validate.OneOf(
+        ["user", "admin"]), load_default="user")
     bio = fields.String(validate=validate.Length(max=500))
     avatar_url = fields.String(validate=validate.Length(max=255))
     address = fields.String(validate=validate.Length(min=5, max=255))
@@ -39,13 +41,16 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         if len(value) < 8:
             raise ValidationError("Password must be at least 8 characters.")
         if not re.search(r'[A-Z]', value):
-            raise ValidationError("Password must contain at least one uppercase letter.")
+            raise ValidationError(
+                "Password must contain at least one uppercase letter.")
         if not re.search(r'[a-z]', value):
-            raise ValidationError("Password must contain at least one lowercase letter.")
+            raise ValidationError(
+                "Password must contain at least one lowercase letter.")
         if not re.search(r'[0-9]', value):
             raise ValidationError("Password must contain at least one number.")
         if not re.search(r'[!@#$%^&*]', value):
-            raise ValidationError("Password must contain at least one special character (!@#$%^&*).")
+            raise ValidationError(
+                "Password must contain at least one special character (!@#$%^&*).")
 
     @validates('username')
     def validate_username(self, value):
@@ -61,7 +66,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     def hash_password(self, data, **kwargs):
         password = data.pop('password', None)
         if password:
-            data['password_hash'] = password  
+            data.password_hash = password
         return data
 
 
