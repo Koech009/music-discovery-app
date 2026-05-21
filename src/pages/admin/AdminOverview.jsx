@@ -30,7 +30,8 @@ export default function AdminOverview() {
           users: users.length,
           admins: users.filter((u) => u.role === "admin").length,
           pendingAdmins: pending.length,
-          unreadMessages: messages.filter((m) => !m.is_read && !m.isRead).length,
+          unreadMessages: messages.filter((m) => !m.is_read && !m.isRead)
+            .length,
         });
       } catch (err) {
         console.error("Error fetching stats:", err);
@@ -47,7 +48,6 @@ export default function AdminOverview() {
       </p>
 
       <div className="dashboard-grid">
-
         {/* Users */}
         <div className="dashboard-card">
           <h2>👥 Manage Users</h2>
@@ -71,13 +71,14 @@ export default function AdminOverview() {
                   {stats.pendingAdmins}
                 </span>{" "}
                 admin account{stats.pendingAdmins !== 1 ? "s" : ""} awaiting
-                approval. Approve to grant access or reject to permanently remove.
+                approval. Approve to grant access or reject to permanently
+                remove.
               </>
             ) : (
               "No pending admin accounts at the moment."
             )}
           </p>
-          <Link to="/admin/pending-accounts" className="dashboard-link">
+          <Link to="/admin/pending" className="dashboard-link">
             Review Requests →
           </Link>
         </div>
@@ -91,8 +92,8 @@ export default function AdminOverview() {
                 <span style={{ color: "#e63946", fontWeight: 600 }}>
                   {stats.unreadMessages}
                 </span>{" "}
-                unread message{stats.unreadMessages !== 1 ? "s" : ""} from users.
-                Mark as read or delete after reviewing.
+                unread message{stats.unreadMessages !== 1 ? "s" : ""} from
+                users. Mark as read or delete after reviewing.
               </>
             ) : (
               "All messages have been read."
@@ -107,8 +108,8 @@ export default function AdminOverview() {
         <div className="dashboard-card">
           <h2>🗂 Audit Logs</h2>
           <p>
-            A chronological record of every action taken on the platform —
-            role changes, suspensions, deletions, and more.
+            A chronological record of every action taken on the platform — role
+            changes, suspensions, deletions, and more.
           </p>
           <Link to="/admin/audit" className="dashboard-link">
             View Audit Logs →
@@ -162,7 +163,6 @@ export default function AdminOverview() {
             Manage Profile →
           </Link>
         </div>
-
       </div>
     </div>
   );

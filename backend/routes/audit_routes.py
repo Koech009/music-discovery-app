@@ -7,13 +7,10 @@ from schemas.audit_log_schema import audit_list_schema
 audit_bp = Blueprint("audit", __name__)
 
 
-# ── Internal Helper (imported by other routes) ────────────────────────────────
+# ── Internal Helper  ────────────────────────────────
 
 def log_action(user_id, action, target_type=None, target_id=None, details=None):
-    """
-    Called internally by other routes to record actions atomically.
-    No commit here — the calling route commits everything in one transaction.
-    """
+
     try:
         db.session.add(AuditLog(
             user_id=user_id,
@@ -38,7 +35,7 @@ def require_admin():
 def paginate_query(query):
     page = request.args.get("page", 1, type=int)
     per_page = min(request.args.get(
-        "per_page", 20, type=int), 100)  # cap at 100
+        "per_page", 20, type=int), 100)
 
     pagination = query.order_by(AuditLog.timestamp.desc()).paginate(
         page=page, per_page=per_page, error_out=False

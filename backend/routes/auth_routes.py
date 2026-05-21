@@ -43,7 +43,7 @@ def log_audit(user_id, action, details):
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
-    print("RECEIVED DATA:", data)  # keep this temporarily
+    print("RECEIVED DATA:", data)
 
     try:
         new_user = user_schema.load(data)  # @post_load handles hashing
@@ -59,7 +59,7 @@ def signup():
     if new_user.role not in ('admin', 'user'):
         return jsonify({'error': 'Invalid role'}), 400
 
-    new_user.approved = new_user.role == 'user'  # ← no set_password here
+    new_user.approved = new_user.role == 'user'
 
     db.session.add(new_user)
     db.session.flush()
@@ -88,6 +88,7 @@ def signup():
         'refresh_token': refresh_token
     }), 201
 # ── POST /api/auth/login ──────────────────────────────────────────────────────
+
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -135,7 +136,6 @@ def login():
 def refresh():
     user_id = int(get_jwt_identity())
 
-    # Always fetch fresh user so role changes are reflected in new token
     user = User.query.get(user_id)
 
     if not user:

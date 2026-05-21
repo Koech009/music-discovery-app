@@ -20,7 +20,7 @@ vi.mock("../hooks/useFavourites.js", () => ({
     favorites: [],
     loading: false,
     error: null,
-    addFavorite: vi.fn().mockResolvedValue(undefined), // ✅ returns Promise
+    addFavorite: vi.fn().mockResolvedValue(undefined),
     removeFavorite: vi.fn(),
   }),
 }));
@@ -30,9 +30,25 @@ vi.mock("../hooks/useLyrics.js", () => ({
     lyrics: null,
     loading: false,
     error: null,
-    getLyrics: vi.fn().mockResolvedValue(undefined), // ✅ returns Promise
+    getLyrics: vi.fn().mockResolvedValue(undefined),
+    clearLyrics: vi.fn(),
   }),
 }));
+
+vi.mock("../hooks/usePlaylists.js", () => ({
+  usePlaylists: () => ({
+    playlists: [
+      { id: "pl-1", name: "Chill Vibes" },
+      { id: "pl-2", name: "Workout Mix" },
+    ],
+    createPlaylist: vi.fn().mockResolvedValue("pl-new"),
+    addSongToPlaylist: vi.fn().mockResolvedValue(undefined),
+  }),
+}));
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
 
 const renderWithRouter = (ui) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
@@ -82,19 +98,32 @@ describe("ErrorMessages", () => {
 
 describe("Footer", () => {
   it("renders brand name", () => {
-    render(<Footer />);
+    render(
+      <MemoryRouter>
+        <Footer />
+      </MemoryRouter>,
+    );
     expect(screen.getByText("🎵 Tunely")).toBeInTheDocument();
   });
 
   it("renders footer links", () => {
-    render(<Footer />);
+    render(
+      <MemoryRouter>
+        <Footer />
+      </MemoryRouter>,
+    );
     expect(screen.getByText("About")).toBeInTheDocument();
-    expect(screen.getByText("Contact")).toBeInTheDocument();
+    expect(screen.getByText("Contact Us")).toBeInTheDocument();
     expect(screen.getByText("Privacy Policy")).toBeInTheDocument();
+    expect(screen.getByText("Terms of Service")).toBeInTheDocument();
   });
 
   it("renders current year in copyright", () => {
-    render(<Footer />);
+    render(
+      <MemoryRouter>
+        <Footer />
+      </MemoryRouter>,
+    );
     const year = new Date().getFullYear();
     expect(
       screen.getByText(`© ${year} Tunely. All rights reserved.`),
@@ -159,7 +188,7 @@ describe("Modal", () => {
         <p>Content</p>
       </Modal>,
     );
-    fireEvent.click(container.querySelector(".overlay"));
+    fireEvent.click(container.querySelector(".modal-overlay"));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -170,7 +199,7 @@ describe("Modal", () => {
         <p>Content</p>
       </Modal>,
     );
-    fireEvent.click(container.querySelector(".modal"));
+    fireEvent.click(container.querySelector(".modal-content"));
     expect(onClose).not.toHaveBeenCalled();
   });
 
@@ -199,24 +228,24 @@ describe("NavBar", () => {
   it("renders all nav links", () => {
     renderWithRouter(<NavBar />);
     expect(screen.getByText("Home")).toBeInTheDocument();
-    expect(screen.getByText("Search")).toBeInTheDocument();
-    expect(screen.getByText("Favorites")).toBeInTheDocument();
-    expect(screen.getByText("Trending")).toBeInTheDocument();
-    expect(screen.getByText("Genres")).toBeInTheDocument();
+    expect(screen.getByText("About")).toBeInTheDocument();
+    expect(screen.getByText("Contact Us")).toBeInTheDocument();
+    expect(screen.getByText("Login")).toBeInTheDocument();
+    expect(screen.getByText("Sign Up")).toBeInTheDocument();
   });
 
   it("applies active class to current route", () => {
     render(
-      <MemoryRouter initialEntries={["/search"]}>
+      <MemoryRouter initialEntries={["/about"]}>
         <NavBar />
       </MemoryRouter>,
     );
-    expect(screen.getByText("Search")).toHaveClass("active");
+    expect(screen.getByText("About")).toHaveClass("active");
   });
 
   it("does not apply active class to inactive routes", () => {
     render(
-      <MemoryRouter initialEntries={["/search"]}>
+      <MemoryRouter initialEntries={["/about"]}>
         <NavBar />
       </MemoryRouter>,
     );
@@ -297,14 +326,14 @@ describe("SongTable", () => {
     expect(audio).toHaveAttribute("src", "https://preview.mp3");
   });
 
-  it("renders Watch Video, Read Lyrics, and Save buttons per song", () => {
+  it("renders action buttons per song", () => {
     renderWithRouter(<SongTable songs={mockSongs} />);
-    expect(screen.getAllByText("Watch Video")).toHaveLength(2);
-    expect(screen.getAllByText("Read Lyrics")).toHaveLength(2);
+    expect(screen.getAllByText("🎬 Video")).toHaveLength(2);
+    expect(screen.getAllByText("📄 Lyrics")).toHaveLength(2);
     expect(screen.getAllByText("❤️ Save")).toHaveLength(2);
+    expect(screen.getAllByText("➕ Add to Playlist")).toHaveLength(2);
   });
 
-  // ✅ Fixed: mockResolvedValue on addFavorite + findByText
   it("shows toast when Save is clicked", async () => {
     renderWithRouter(<SongTable songs={mockSongs} />);
     fireEvent.click(screen.getAllByText("❤️ Save")[0]);
@@ -313,17 +342,15 @@ describe("SongTable", () => {
     ).toBeInTheDocument();
   });
 
-  // ✅ Fixed: findByText waits for async modal render
-  it("opens lyrics modal when Read Lyrics is clicked", async () => {
+  it("opens lyrics modal when Lyrics button is clicked", async () => {
     renderWithRouter(<SongTable songs={mockSongs} />);
-    fireEvent.click(screen.getAllByText("Read Lyrics")[0]);
+    fireEvent.click(screen.getAllByText("📄 Lyrics")[0]);
     expect(await screen.findByText("Baby — Justin Bieber")).toBeInTheDocument();
   });
 
-  // ✅ Fixed: findByText for open, waitFor for close
-  it("closes modal when close button is clicked", async () => {
+  it("closes lyrics modal when close button is clicked", async () => {
     renderWithRouter(<SongTable songs={mockSongs} />);
-    fireEvent.click(screen.getAllByText("Read Lyrics")[0]);
+    fireEvent.click(screen.getAllByText("📄 Lyrics")[0]);
     await screen.findByText("Baby — Justin Bieber");
 
     fireEvent.click(screen.getByText("✖"));
@@ -331,6 +358,23 @@ describe("SongTable", () => {
       expect(
         screen.queryByText("Baby — Justin Bieber"),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  it("opens playlist modal when Add to Playlist is clicked", async () => {
+    renderWithRouter(<SongTable songs={mockSongs} />);
+    fireEvent.click(screen.getAllByText("➕ Add to Playlist")[0]);
+    expect(await screen.findByText(/"Baby"/)).toBeInTheDocument();
+  });
+
+  it("closes playlist modal when Cancel is clicked", async () => {
+    renderWithRouter(<SongTable songs={mockSongs} />);
+    fireEvent.click(screen.getAllByText("➕ Add to Playlist")[0]);
+    await screen.findByText(/"Baby"/);
+
+    fireEvent.click(screen.getByText("Cancel"));
+    await waitFor(() => {
+      expect(screen.queryByText(/"Baby"/)).not.toBeInTheDocument();
     });
   });
 });

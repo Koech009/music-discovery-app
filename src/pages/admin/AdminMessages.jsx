@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import useMessage from "../../hooks/useMessage";
+import { useAdminUsers } from "../../hooks/useAdminUsers";
 import Pagination from "../../components/Pagination";
 import "../../styles/adminUsers.css";
 
@@ -7,21 +7,21 @@ function AdminMessages() {
   const {
     messages,
     allMessages,
-    loading,
-    error,
-    metadata,
-    perPage,
-    fetchMessages,
+    msgLoading,
+    msgError,
+    msgMetadata,
+    loadMessages,
     removeMessage,
     markRead,
-    goToPage,
-  } = useMessage();
+    goToMsgPage,
+    perPage,
+  } = useAdminUsers();
 
   useEffect(() => {
-    fetchMessages();
+    loadMessages();
   }, []);
 
-  const unreadCount = allMessages.filter((m) => !m.isRead).length;
+  const unreadCount = allMessages.filter((m) => !m.is_read).length;
 
   return (
     <div className="admin-users-page">
@@ -31,14 +31,14 @@ function AdminMessages() {
           ? `You have ${unreadCount} unread message${unreadCount !== 1 ? "s" : ""}.`
           : "All messages have been read."}
         <span style={{ color: "#6a5a5a", marginLeft: "6px" }}>
-          ({metadata.total} total)
+          ({msgMetadata.total} total)
         </span>
       </p>
 
-      {loading && <p className="page-sub">Loading...</p>}
-      {error && <p className="error">{error}</p>}
+      {msgLoading && <p className="page-sub">Loading...</p>}
+      {msgError && <p className="error">{msgError}</p>}
 
-      {!loading && metadata.total === 0 ? (
+      {!msgLoading && msgMetadata.total === 0 ? (
         <div className="empty-state">No messages yet.</div>
       ) : (
         <>
@@ -55,25 +55,28 @@ function AdminMessages() {
             </thead>
             <tbody>
               {messages.map((m) => (
-                <tr key={m.id} className={!m.isRead ? "row-unread" : ""}>
+                <tr key={m.id} className={!m.is_read ? "row-unread" : ""}>
                   <td>{m.name}</td>
                   <td>{m.email}</td>
                   <td className="message-cell">{m.message}</td>
                   <td>
-                    {m.createdAt
-                      ? new Date(m.createdAt).toLocaleString()
+                    {m.created_at
+                      ? new Date(m.created_at).toLocaleString()
                       : "No timestamp"}
                   </td>
                   <td>
-                    {m.isRead ? (
+                    {m.is_read ? (
                       <span className="badge active">Read</span>
                     ) : (
                       <span className="badge suspended">Unread</span>
                     )}
                   </td>
                   <td className="actions">
-                    {!m.isRead && (
-                      <button className="btn-view" onClick={() => markRead(m.id)}>
+                    {!m.is_read && (
+                      <button
+                        className="btn-view"
+                        onClick={() => markRead(m.id)}
+                      >
                         Mark Read
                       </button>
                     )}
@@ -89,7 +92,11 @@ function AdminMessages() {
             </tbody>
           </table>
 
-          <Pagination metadata={metadata} onPageChange={goToPage} perPage={perPage} />
+          <Pagination
+            metadata={msgMetadata}
+            onPageChange={goToMsgPage}
+            perPage={perPage}
+          />
         </>
       )}
     </div>
