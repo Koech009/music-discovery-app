@@ -6,6 +6,7 @@ from models.user import User
 from models.favorite import Favorite
 from models.playlist import Playlist
 from models.message import Message
+from models.audit_log import AuditLog
 
 
 @pytest.fixture(scope="session")
@@ -24,13 +25,24 @@ def session(app):
     with app.app_context():
         connection = db.engine.connect()
         transaction = connection.begin()
-        db.session.bind = connection
+        nested = connection.begin_nested()
 
         yield db.session
 
         db.session.remove()
+        nested.rollback()
         transaction.rollback()
         connection.close()
+
+
+@pytest.fixture(scope="function")
+def app_ctx(app):
+    """
+    Lightweight context for tests that need the app (schemas, routes)
+    but don't need a database session.
+    """
+    with app.app_context():
+        yield
 
 
 @pytest.fixture
