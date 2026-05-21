@@ -4,8 +4,10 @@ from models.user import User
 
 
 def seed_data():
-    db.drop_all()
-    db.create_all()
+    # Don't drop tables in production
+    if User.query.filter_by(role='admin').first():
+        print("Admins already seeded, skipping.")
+        return
 
     admin1 = User(
         username="TunelyAdmin",
