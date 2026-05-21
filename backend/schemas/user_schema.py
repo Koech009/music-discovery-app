@@ -62,12 +62,12 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         if value and not re.match(r'^\+?\d{7,15}$', value):
             raise ValidationError("Phone must be digits, 7-15 characters.")
 
-    @post_load
-    def hash_password(self, data, **kwargs):
-        password = data.pop('password', None)
-        if password:
-            data.password_hash = password
-        return data
+    # @post_load
+    # def hash_password(self, data, **kwargs):
+    #     password = data.pop('password', None)
+    #     if password:
+    #         data.password_hash = password
+    #     return data
 
 
 user_schema = UserSchema()

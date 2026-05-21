@@ -46,10 +46,19 @@ def signup():
     print("RECEIVED DATA:", data)
 
     try:
-        new_user = user_schema.load(data)  # @post_load handles hashing
+        validated = user_schema.load(data)
     except ValidationError as err:
         print("VALIDATION ERRORS:", err.messages)
         return jsonify({'errors': err.messages}), 400
+
+    # Handle hashing
+    if isinstance(validated, dict):
+        password = validated.pop('password', None)
+        new_user = User(**validated)
+        if password:
+            new_user.password_hash = password
+    else:
+        new_user = validated
 
     if User.query.filter_by(email=new_user.email).first():
         return jsonify({'error': 'Email already registered'}), 409
